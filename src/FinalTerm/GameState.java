@@ -24,20 +24,17 @@ public class GameState {
     
     private long portalEndTime = 0;
     
-    // 룰렛 관련
-    private boolean isRouletteSpinning = false;
+    // volatile: 스레드 간 가시성 보장
+    private volatile boolean isRouletteSpinning = false;
     private long rouletteEndTime = 0;
-    private String currentRouletteText = "";
-    private boolean currentRoulettePositive = true; // [추가] 룰렛 텍스트 색상 결정용
+    private volatile String currentRouletteText = "";
+    private volatile boolean currentRoulettePositive = true;
     
-    // 옵션 목록 (인덱스 매핑: 0-빠름, 1-느림, 2-2배, 3-반전, 4-암흑, 5-가위)
+    private boolean hasHammer = false;
+    
     private final String[] rouletteOptions = {
-        "SPEED UP! (BAD)",    // 0: 부정
-        "SPEED DOWN (GOOD)",  // 1: 긍정
-        "X2 SCORE (GOOD)",    // 2: 긍정
-        "REVERSE (BAD)",      // 3: 부정
-        "DARKNESS (BAD)",     // 4: 부정
-        "SCISSORS (GOOD)"     // 5: 긍정
+        "SPEED UP! (BAD)", "SPEED DOWN (GOOD)", "X2 SCORE (GOOD)", 
+        "REVERSE (BAD)", "DARKNESS (BAD)", "SCISSORS (GOOD)"
     };
     
     public GameState() {
@@ -54,10 +51,10 @@ public class GameState {
         currentCombo = 0;
         maxCombo = 0;
         lastEatTime = 0;
+        hasHammer = false;
         
         board.spawnFood(snake.getBody());
         board.removePortals();
-        
         resetEffects();
     }
     
@@ -83,17 +80,29 @@ public class GameState {
         
         if (board.isWall(newHead)) return new UpdateResult(UpdateResult.Type.WALL_COLLISION, newHead);
         if (snake.checkSelfCollision(newHead)) return new UpdateResult(UpdateResult.Type.SELF_COLLISION, newHead);
-        if (board.isObstacle(newHead)) return new UpdateResult(UpdateResult.Type.OBSTACLE_COLLISION, newHead);
+        
+        if (board.isObstacle(newHead)) {
+            if (hasHammer) {
+                hasHammer = false;
+                board.removeObstacle(newHead);
+                snake.moveTo(newHead);
+                return new UpdateResult(UpdateResult.Type.OBSTACLE_DESTROYED, newHead, 0, "HAMMER USED!", true);
+            } else {
+                return new UpdateResult(UpdateResult.Type.OBSTACLE_COLLISION, newHead);
+            }
+        }
         
         snake.moveTo(newHead);
         UpdateResult result = new UpdateResult(UpdateResult.Type.NORMAL_MOVE, newHead);
         
         managePortals();
         
+        // 메인 로직에서는 시간 체크만 수행
         if (isRouletteSpinning) {
-            UpdateResult rouletteResult = updateRoulette();
-            if (rouletteResult != null) {
-                return rouletteResult;
+            long currentTime = System.currentTimeMillis();
+            if (currentTime >= rouletteEndTime) {
+                isRouletteSpinning = false; // 스레드 종료 신호
+                return applyRandomEffect();
             }
         }
         
@@ -103,6 +112,13 @@ public class GameState {
             itemsCollected++;
             startRoulette();
             result = new UpdateResult(UpdateResult.Type.ITEM_COLLECTED, newHead);
+        }
+        
+        SpecialItem hammer = board.getHammer();
+        if (hammer != null && hammer.getPosition().equals(newHead)) {
+            board.removeHammer();
+            hasHammer = true;
+            result = new UpdateResult(UpdateResult.Type.HAMMER_COLLECTED, newHead, 0, "HAMMER GET!", true);
         }
         
         Food food = board.getFood();
@@ -125,6 +141,7 @@ public class GameState {
             Random rnd = new Random();
             if (rnd.nextInt(100) < 20) board.spawnSpecialItem(snake.getBody());
             if (rnd.nextInt(100) < 15) board.spawnObstacle(snake.getBody());
+            if (rnd.nextInt(100) < 10) board.spawnHammer(snake.getBody());
             
             result = new UpdateResult(UpdateResult.Type.FOOD_EATEN, newHead, currentCombo);
         }
@@ -142,30 +159,29 @@ public class GameState {
     }
     
     private void startRoulette() {
+        if (isRouletteSpinning) return;
+        
         isRouletteSpinning = true;
         rouletteEndTime = System.currentTimeMillis() + 3000;
-    }
-    
-    private UpdateResult updateRoulette() {
-        long currentTime = System.currentTimeMillis();
         
-        if (currentTime >= rouletteEndTime) {
-            isRouletteSpinning = false;
-            return applyRandomEffect();
-        } else {
-            // 룰렛 도는 중: 랜덤 텍스트 보여주기
+        // [중요] 룰렛 텍스트 변경 스레드 (게임 속도와 무관하게 80ms마다 변경)
+        new Thread(() -> {
             Random r = new Random();
-            int randIdx = r.nextInt(rouletteOptions.length);
-            currentRouletteText = rouletteOptions[randIdx];
-            currentRoulettePositive = isPositiveEffect(randIdx); // 색상 결정을 위해 저장
-            return null;
-        }
+            while (isRouletteSpinning && System.currentTimeMillis() < rouletteEndTime) {
+                int randIdx = r.nextInt(rouletteOptions.length);
+                currentRouletteText = rouletteOptions[randIdx];
+                currentRoulettePositive = isPositiveEffect(randIdx);
+                try {
+                    Thread.sleep(80); 
+                } catch (InterruptedException e) {
+                    Thread.currentThread().interrupt();
+                    break;
+                }
+            }
+        }).start();
     }
     
-    // [추가] 긍정 효과인지 판별하는 헬퍼 메서드
     private boolean isPositiveEffect(int index) {
-        // 1(Slow), 2(Score), 5(Scissors) -> Positive
-        // 0(Fast), 3(Reverse), 4(Darkness) -> Negative
         return index == 1 || index == 2 || index == 5;
     }
     
@@ -173,32 +189,17 @@ public class GameState {
         int rand = new Random().nextInt(6);
         long currentTime = System.currentTimeMillis();
         String effectName = "";
-        
-        // 긍정/부정 여부 판단
         boolean isPositive = isPositiveEffect(rand);
         
         switch (rand) {
-            case 0: // SPEED UP (Bad)
-                isSpeedUp = true; isSpeedDown = false; speedEffectEndTime = currentTime + 5000; 
-                effectName = "SPEED UP! (BAD)"; break;
-            case 1: // SPEED DOWN (Good)
-                isSpeedDown = true; isSpeedUp = false; speedEffectEndTime = currentTime + 5000; 
-                effectName = "SPEED DOWN (GOOD)"; break;
-            case 2: // X2 SCORE (Good)
-                doubleScoreEndTime = currentTime + 10000; 
-                effectName = "DOUBLE SCORE (10s)"; break;
-            case 3: // REVERSE (Bad)
-                reverseInputEndTime = currentTime + 5000; 
-                effectName = "REVERSE CONTROL (5s)"; break;
-            case 4: // DARKNESS (Bad)
-                reducedVisionEndTime = currentTime + 5000; 
-                effectName = "DARKNESS (5s)"; break;
-            case 5: // SCISSORS (Good)
-                snake.cutTail(3); 
-                effectName = "SCISSORS (CUT TAIL)"; break;
+            case 0: isSpeedUp = true; isSpeedDown = false; speedEffectEndTime = currentTime + 5000; effectName = "SPEED UP! (BAD)"; break;
+            case 1: isSpeedDown = true; isSpeedUp = false; speedEffectEndTime = currentTime + 5000; effectName = "SPEED DOWN (GOOD)"; break;
+            case 2: doubleScoreEndTime = currentTime + 10000; effectName = "DOUBLE SCORE (10s)"; break;
+            case 3: reverseInputEndTime = currentTime + 5000; effectName = "REVERSE CONTROL (5s)"; break;
+            case 4: reducedVisionEndTime = currentTime + 5000; effectName = "DARKNESS (5s)"; break;
+            case 5: snake.cutTail(3); effectName = "SCISSORS (CUT TAIL)"; break;
         }
         
-        // 최종 결정된 텍스트와 긍정 여부 저장
         currentRouletteText = effectName;
         currentRoulettePositive = isPositive;
         
@@ -218,9 +219,11 @@ public class GameState {
     }
 
     // Getters
+    public boolean hasHammer() { return hasHammer; }
+    
     public boolean isRouletteSpinning() { return isRouletteSpinning; }
     public String getCurrentRouletteText() { return currentRouletteText; }
-    public boolean isCurrentRoulettePositive() { return currentRoulettePositive; } // [추가]
+    public boolean isCurrentRoulettePositive() { return currentRoulettePositive; }
 
     public boolean isDoubleScoreActive() { return System.currentTimeMillis() < doubleScoreEndTime; }
     public boolean isReverseInputActive() { return System.currentTimeMillis() < reverseInputEndTime; }

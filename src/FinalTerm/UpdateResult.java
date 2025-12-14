@@ -6,9 +6,10 @@ public class UpdateResult {
     public enum Type {
         NORMAL_MOVE,
         FOOD_EATEN,
-        ITEM_COLLECTED,     // 룰렛 시작
-        ROULETTE_FINISHED,  // 룰렛 종료 (결과 적용)
-        OBSTACLE_DESTROYED,
+        ITEM_COLLECTED,     // 랜덤박스 획득
+        HAMMER_COLLECTED,   // [추가] 해머 획득
+        ROULETTE_FINISHED,  // 룰렛 종료
+        OBSTACLE_DESTROYED, // 해머로 장애물 파괴
         PORTAL_USED,
         WALL_COLLISION,
         SELF_COLLISION,
@@ -19,7 +20,7 @@ public class UpdateResult {
     private Point position;
     private int combo;
     private String message;
-    private boolean isPositive; // [추가] 긍정 효과 여부
+    private boolean isPositive;
     
     public UpdateResult(Type type, Point position) {
         this(type, position, 0, null, true);
@@ -33,7 +34,6 @@ public class UpdateResult {
         this(type, position, combo, message, true);
     }
     
-    // [추가] 긍정/부정 여부를 포함하는 생성자
     public UpdateResult(Type type, Point position, int combo, String message, boolean isPositive) {
         this.type = type;
         this.position = position;
@@ -46,7 +46,7 @@ public class UpdateResult {
     public Point getPosition() { return position; }
     public int getCombo() { return combo; }
     public String getMessage() { return message; }
-    public boolean isPositive() { return isPositive; } // Getter
+    public boolean isPositive() { return isPositive; }
     
     public boolean isCollision() {
         return type == Type.WALL_COLLISION || 

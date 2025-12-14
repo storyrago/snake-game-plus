@@ -15,7 +15,10 @@ public class SnakeGame extends JPanel implements ActionListener {
     private ScoreManager scoreManager;
     private InputHandler inputHandler;
     
-    private Timer gameTimer;
+    private Timer gameTimer;   // 로직용
+    private Timer renderTimer; // 렌더링용
+    private Timer buttonShowTimer; // [추가] 버튼 딜레이 표시용 타이머
+    
     private int delay;
     private int baseDelay;
     private boolean running;
@@ -53,11 +56,13 @@ public class SnakeGame extends JPanel implements ActionListener {
         addKeyListener(inputHandler);
         
         gameTimer = new Timer(100, this);
+        renderTimer = new Timer(16, e -> repaint());
+        
         initGameOverButtons();
     }
     
     private void initGameOverButtons() {
-        restartButton = createStyledButton("Try Again", new Color(0, 200, 0));
+        restartButton = createStyledButton("Try Again (Enter)", new Color(0, 200, 0));
         restartButton.setBounds(screenWidth / 2 - 160, screenHeight - 80, 150, 45);
         restartButton.addActionListener(e -> { restart(); requestFocusInWindow(); });
         add(restartButton);
@@ -70,7 +75,7 @@ public class SnakeGame extends JPanel implements ActionListener {
     
     private JButton createStyledButton(String text, Color baseColor) {
         JButton button = new JButton(text);
-        button.setFont(new Font("Arial", Font.BOLD, 18));
+        button.setFont(new Font("Arial", Font.BOLD, 14));
         button.setBackground(baseColor);
         button.setForeground(Color.WHITE);
         button.setFocusPainted(false);
@@ -82,31 +87,50 @@ public class SnakeGame extends JPanel implements ActionListener {
         return button;
     }
     
-    private void showButtons() { restartButton.setVisible(true); menuButton.setVisible(true); UIAnimationHelper.fadeIn(restartButton, 500); UIAnimationHelper.fadeIn(menuButton, 500); }
-    private void hideButtons() { restartButton.setVisible(false); menuButton.setVisible(false); }
+    private void showButtons() { 
+        restartButton.setVisible(true); 
+        menuButton.setVisible(true); 
+        UIAnimationHelper.fadeIn(restartButton, 500); 
+        UIAnimationHelper.fadeIn(menuButton, 500); 
+    }
+    
+    // [수정] 버튼 숨길 때, 혹시 돌고 있을지 모를 '버튼 표시 타이머'를 취소함
+    private void hideButtons() { 
+        if (buttonShowTimer != null && buttonShowTimer.isRunning()) {
+            buttonShowTimer.stop();
+        }
+        restartButton.setVisible(false); 
+        menuButton.setVisible(false); 
+    }
 
     public void startNewGame() {
-        hideButtons();
+        hideButtons(); // 여기서 타이머도 같이 취소됨
         gameState.reset();
+        
         GameDifficulty difficulty = GameSettings.getDifficulty();
         baseDelay = difficulty.getInitialDelay();
         delay = baseDelay;
+        
         running = true;
         showResults = false;
+        
         gameTimer.setDelay(delay);
         gameTimer.start();
+        renderTimer.start();
+        
         repaint();
     }
 
     @Override
     public void actionPerformed(ActionEvent e) {
-        if (running) { update(); repaint(); }
+        if (running) { update(); }
     }
 
     private void update() {
         if (GameSettings.getMode() == GameMode.TIME_ATTACK && gameState.isTimeUp(GameSettings.getTimeLimit())) {
             gameOver(); return;
         }
+        
         UpdateResult result = gameState.update(null);
         updateGameSpeed();
         handleUpdateResult(result);
@@ -131,25 +155,26 @@ public class SnakeGame extends JPanel implements ActionListener {
 
     private void handleUpdateResult(UpdateResult result) {
         if (result.getType() == UpdateResult.Type.ITEM_COLLECTED) {
-             // 룰렛 시작
              soundManager.playSound(600, 100);
         } else if (result.getType() == UpdateResult.Type.ROULETTE_FINISHED) {
-             // [수정] 룰렛 종료: 긍정/부정에 따른 사운드 분기
              if (result.isPositive()) {
-                 // 긍정: 높은음 (딩동댕 느낌)
                  soundManager.playSound(800, 100); 
                  Timer t = new Timer(100, e -> soundManager.playSound(1000, 200));
                  t.setRepeats(false); t.start();
              } else {
-                 // 부정: 낮은 경고음 (삐-)
                  soundManager.playSound(300, 400); 
              }
+             showEffectMessage(result.getMessage());
+        } else if (result.getType() == UpdateResult.Type.HAMMER_COLLECTED) {
+             soundManager.playSound(750, 150);
+             showEffectMessage(result.getMessage());
+        } else if (result.getType() == UpdateResult.Type.OBSTACLE_DESTROYED) {
+             soundManager.playSound(200, 200);
              showEffectMessage(result.getMessage());
         }
 
         switch (result.getType()) {
             case FOOD_EATEN: soundManager.playSound(523 + (result.getCombo() * 50), 100); break;
-            case OBSTACLE_DESTROYED: soundManager.playSound(600, 100); break;
             case PORTAL_USED: soundManager.playSound(800, 100); gameState.clearPortalCooldown(); break;
             case WALL_COLLISION: case SELF_COLLISION: case OBSTACLE_COLLISION: gameOver(); break;
         }
@@ -168,18 +193,32 @@ public class SnakeGame extends JPanel implements ActionListener {
         running = false;
         showResults = true;
         gameTimer.stop();
+        renderTimer.stop();
+        
         soundManager.playSound(200, 500);
         scoreManager.addScore(PlayerData.getPlayerName(), GameSettings.getMode(), GameSettings.getDisplayDifficulty(), 
                               gameState.getScore(), gameState.getMaxCombo(), gameState.getPlayTime(), gameState.getFoodEaten(), gameState.getItemsCollected());
+        
         repaint();
-        Timer t = new Timer(500, e -> showButtons());
-        t.setRepeats(false); t.start();
+        
+        // [수정] 전역 변수 buttonShowTimer에 할당하여 제어 가능하게 함
+        if (buttonShowTimer != null && buttonShowTimer.isRunning()) {
+            buttonShowTimer.stop();
+        }
+        buttonShowTimer = new Timer(500, e -> showButtons());
+        buttonShowTimer.setRepeats(false);
+        buttonShowTimer.start();
     }
 
     public void restart() { startNewGame(); }
     public void cycleTheme() { themeManager.cycleTheme(); repaint(); }
     public void toggleSound() { soundManager.toggle(); }
-    public void handleEnter() { if (showResults) { controller.showScreen(GameScreen.MAIN_MENU); hideButtons(); } }
+
+    public void handleEnter() {
+        if (showResults) {
+            restart(); 
+        }
+    }
 
     public void handleDirection(Point direction) {
         if (running) {

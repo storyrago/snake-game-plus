@@ -13,7 +13,10 @@ public class GameBoard {
     private List<Point> obstacles;
     private Portal[] portals;
     private Food food;
+    
     private SpecialItem specialItem;
+    private SpecialItem hammer;
+    
     private Random random;
     
     public GameBoard(int width, int height) {
@@ -21,13 +24,11 @@ public class GameBoard {
         this.height = height;
         this.obstacles = new ArrayList<>();
         this.random = new Random();
-        
         initBoard();
     }
     
     private void initBoard() {
         generateObstacles();
-        // 초기 포탈 없음
     }
     
     private void generateObstacles() {
@@ -46,7 +47,7 @@ public class GameBoard {
     
     private void spawnObstacleInternal(List<Point> snakeBody) {
         Point pos;
-        Point startPoint = new Point(10, 10); // 게임 시작 지점
+        Point startPoint = new Point(10, 10);
         int attempts = 0;
         
         do {
@@ -54,13 +55,12 @@ public class GameBoard {
             int y = random.nextInt(height);
             pos = new Point(x, y);
             attempts++;
-            
-            // [수정됨] 생성 금지 조건에 '시작 지점 주변 5칸 이내' 추가 (pos.distance(startPoint) < 5)
         } while ((isSnake(pos, snakeBody) || isWall(pos) || isObstacle(pos) || 
                  (food != null && pos.equals(food.getPosition())) || checkPortal(pos) != null ||
                  (specialItem != null && pos.equals(specialItem.getPosition())) ||
-                 (!snakeBody.isEmpty() && pos.distance(snakeBody.get(0)) < 3) || // 뱀 머리 안전거리
-                 pos.distance(startPoint) < 5) // [중요] 시작 지점 안전거리 확보
+                 (hammer != null && pos.equals(hammer.getPosition())) ||
+                 (!snakeBody.isEmpty() && pos.distance(snakeBody.get(0)) < 3) ||
+                 pos.distance(startPoint) < 5) 
                  && attempts < 100);
         
         if (attempts < 100) {
@@ -68,6 +68,28 @@ public class GameBoard {
         }
     }
     
+    public void spawnHammer(List<Point> snakeBody) {
+        if (hammer != null) return;
+        
+        Point pos;
+        int attempts = 0;
+        do {
+            int x = random.nextInt(width);
+            int y = random.nextInt(height);
+            pos = new Point(x, y);
+            attempts++;
+        } while ((isSnake(pos, snakeBody) || isWall(pos) || isObstacle(pos) || 
+                 (food != null && pos.equals(food.getPosition())) || 
+                 (specialItem != null && pos.equals(specialItem.getPosition())) ||
+                 checkPortal(pos) != null) && attempts < 100);
+        
+        if (attempts < 100) {
+            hammer = new SpecialItem(pos.x, pos.y, "hammer");
+        }
+    }
+    
+    public void removeHammer() { this.hammer = null; }
+
     public void spawnPortals(List<Point> snakeBody) {
         portals = new Portal[2];
         for (int i = 0; i < 2; i++) {
@@ -79,14 +101,15 @@ public class GameBoard {
             } while ((isSnake(p, snakeBody) || isObstacle(p) || isWall(p) ||
                      (food != null && p.equals(food.getPosition())) ||
                      (specialItem != null && p.equals(specialItem.getPosition())) ||
+                     (hammer != null && p.equals(hammer.getPosition())) ||
                      (i == 1 && p.distance(portals[0].getPosition()) < 5)) 
                      && attempts < 100);
             
             if (attempts < 100) {
-                portals[i] = new Portal(p.x, p.y, i == 0 ? "purple" : "cyan");
+                // [수정] "cyan" -> "blue"
+                portals[i] = new Portal(p.x, p.y, i == 0 ? "purple" : "blue");
             } else {
-                portals = null;
-                return;
+                portals = null; return;
             }
         }
     }
@@ -99,7 +122,9 @@ public class GameBoard {
             int x = random.nextInt(width);
             int y = random.nextInt(height);
             pos = new Point(x, y);
-        } while (isSnake(pos, snakeBody) || isWall(pos) || isObstacle(pos) || checkPortal(pos) != null);
+        } while (isSnake(pos, snakeBody) || isWall(pos) || isObstacle(pos) || 
+                 (hammer != null && pos.equals(hammer.getPosition())) ||
+                 checkPortal(pos) != null);
         
         String type = random.nextInt(10) == 0 ? "rare" : "normal";
         food = new Food(pos.x, pos.y, type);
@@ -112,7 +137,9 @@ public class GameBoard {
             int y = random.nextInt(height);
             pos = new Point(x, y);
         } while (isSnake(pos, snakeBody) || isWall(pos) || isObstacle(pos) || 
-                 (food != null && pos.equals(food.getPosition())) || checkPortal(pos) != null);
+                 (food != null && pos.equals(food.getPosition())) || 
+                 (hammer != null && pos.equals(hammer.getPosition())) ||
+                 checkPortal(pos) != null);
         
         specialItem = new SpecialItem(pos.x, pos.y, "random_box");
     }
@@ -147,6 +174,7 @@ public class GameBoard {
     public Portal[] getPortals() { return portals; }
     public Food getFood() { return food; }
     public SpecialItem getSpecialItem() { return specialItem; }
+    public SpecialItem getHammer() { return hammer; }
     public void setSpecialItem(SpecialItem item) { this.specialItem = item; }
     
     public static int getGridSize() { return GRID_SIZE; }
