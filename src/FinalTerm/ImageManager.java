@@ -28,11 +28,12 @@ public class ImageManager {
         loadImage("portal_purple", "portal_purple.png");
         loadImage("portal_blue", "portal_blue.png");
         
-        // [수정] 망치 아이템 -> hammer.png
+        // 망치 & 로고
         loadImage("hammer", "hammer.png");
-        
-        // [수정] 메인 메뉴 로고 -> snakegame.png
         loadImage("logo", "snakegame.png");
+        
+        // [추가] 배경 이미지
+        loadImage("background", "background.png");
     }
 
     private void loadImage(String key, String fileName) {
