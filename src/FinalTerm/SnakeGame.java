@@ -1,7 +1,5 @@
 package FinalTerm;
 
-//SnakeGame.java - ¸ÞÀÎ °ÔÀÓ ÄÁÆ®·Ñ·¯
-
 import javax.swing.*;
 import java.awt.*;
 import java.awt.event.*;
@@ -19,18 +17,18 @@ public class SnakeGame extends JPanel implements ActionListener {
     
     private Timer gameTimer;
     private int delay;
+    private int baseDelay;
     private boolean running;
     private boolean showResults;
     
+    private JButton restartButton;
+    private JButton menuButton;
+    
+    private String currentEffectMessage = "";
+    private Timer effectMessageTimer;
+    
     private int screenWidth;
     private int screenHeight;
-    
-    public static void main(String[] args) {
-        SwingUtilities.invokeLater(() -> {
-            SnakeGameController controller = new SnakeGameController();
-            controller.show();
-        });
-    }
     
     public SnakeGame(SnakeGameController controller, ThemeManager themeManager, 
                      SoundManager soundManager, ScoreManager scoreManager) {
@@ -46,6 +44,7 @@ public class SnakeGame extends JPanel implements ActionListener {
         setPreferredSize(new Dimension(screenWidth, screenHeight + 180));
         setBackground(Color.BLACK);
         setFocusable(true);
+        setLayout(null);
         
         gameState = new GameState();
         renderer = new GameRenderer();
@@ -53,133 +52,146 @@ public class SnakeGame extends JPanel implements ActionListener {
         
         addKeyListener(inputHandler);
         
-        running = false;
-        showResults = false;
-        
-        gameTimer = new Timer(delay, this);
+        gameTimer = new Timer(100, this);
+        initGameOverButtons();
     }
     
+    private void initGameOverButtons() {
+        restartButton = createStyledButton("Try Again", new Color(0, 200, 0));
+        restartButton.setBounds(screenWidth / 2 - 160, screenHeight - 80, 150, 45);
+        restartButton.addActionListener(e -> { restart(); requestFocusInWindow(); });
+        add(restartButton);
+        
+        menuButton = createStyledButton("Main Menu", new Color(200, 50, 50));
+        menuButton.setBounds(screenWidth / 2 + 10, screenHeight - 80, 150, 45);
+        menuButton.addActionListener(e -> { controller.showScreen(GameScreen.MAIN_MENU); hideButtons(); });
+        add(menuButton);
+    }
+    
+    private JButton createStyledButton(String text, Color baseColor) {
+        JButton button = new JButton(text);
+        button.setFont(new Font("Arial", Font.BOLD, 18));
+        button.setBackground(baseColor);
+        button.setForeground(Color.WHITE);
+        button.setFocusPainted(false);
+        button.setBorderPainted(false);
+        button.setCursor(new Cursor(Cursor.HAND_CURSOR));
+        button.setVisible(false);
+        button.setFocusable(false);
+        UIAnimationHelper.addHoverEffect(button, baseColor, baseColor.brighter(), Color.WHITE, Color.WHITE);
+        return button;
+    }
+    
+    private void showButtons() { restartButton.setVisible(true); menuButton.setVisible(true); UIAnimationHelper.fadeIn(restartButton, 500); UIAnimationHelper.fadeIn(menuButton, 500); }
+    private void hideButtons() { restartButton.setVisible(false); menuButton.setVisible(false); }
+
     public void startNewGame() {
+        hideButtons();
         gameState.reset();
-        
         GameDifficulty difficulty = GameSettings.getDifficulty();
-        delay = difficulty.getInitialDelay();
-        
+        baseDelay = difficulty.getInitialDelay();
+        delay = baseDelay;
         running = true;
         showResults = false;
         gameTimer.setDelay(delay);
         gameTimer.start();
         repaint();
     }
-    
+
     @Override
     public void actionPerformed(ActionEvent e) {
-        if (running) {  // paused Á¶°Ç Á¦°Å
-            update();
-            repaint();
-        }
+        if (running) { update(); repaint(); }
     }
-    
+
     private void update() {
-        // ½Ã°£ Á¦ÇÑ ¸ðµå Ã¼Å©
-        if (GameSettings.getMode() == GameMode.TIME_ATTACK) {
-            if (gameState.isTimeUp(GameSettings.getTimeLimit())) {
-                gameOver();
-                return;
-            }
+        if (GameSettings.getMode() == GameMode.TIME_ATTACK && gameState.isTimeUp(GameSettings.getTimeLimit())) {
+            gameOver(); return;
         }
-        
         UpdateResult result = gameState.update(null);
-        
+        updateGameSpeed();
         handleUpdateResult(result);
         
         if (gameState.getSnake().getLength() % 5 == 0) {
             GameDifficulty difficulty = GameSettings.getDifficulty();
-            int newDelay = Math.max(
-                difficulty.getMinDelay(), 
-                difficulty.getInitialDelay() - (gameState.getSnake().getLength() / 5) * 10
-            );
-            if (newDelay != delay) {
-                delay = newDelay;
-                gameTimer.setDelay(delay);
+            int lengthBoost = (gameState.getSnake().getLength() / 5) * 10;
+            int newBaseDelay = Math.max(difficulty.getMinDelay(), difficulty.getInitialDelay() - lengthBoost);
+            if (newBaseDelay != baseDelay) {
+                baseDelay = newBaseDelay;
+                if (gameState.getSpeedEffect() == 0) gameTimer.setDelay(baseDelay);
             }
         }
     }
-    
+
+    private void updateGameSpeed() {
+        int speedEffect = gameState.getSpeedEffect();
+        if (speedEffect == 1) gameTimer.setDelay((int)(baseDelay * 0.6));
+        else if (speedEffect == -1) gameTimer.setDelay((int)(baseDelay * 1.5));
+        else gameTimer.setDelay(baseDelay);
+    }
+
     private void handleUpdateResult(UpdateResult result) {
+        if (result.getType() == UpdateResult.Type.ITEM_COLLECTED) {
+             // ë£°ë › ì‹œìž‘
+             soundManager.playSound(600, 100);
+        } else if (result.getType() == UpdateResult.Type.ROULETTE_FINISHED) {
+             // [ìˆ˜ì •] ë£°ë › ì¢…ë£Œ: ê¸ì •/ë¶€ì •ì— ë”°ë¥¸ ì‚¬ìš´ë“œ ë¶„ê¸°
+             if (result.isPositive()) {
+                 // ê¸ì •: ë†’ì€ìŒ (ë”©ë™ëŒ• ëŠë‚Œ)
+                 soundManager.playSound(800, 100); 
+                 Timer t = new Timer(100, e -> soundManager.playSound(1000, 200));
+                 t.setRepeats(false); t.start();
+             } else {
+                 // ë¶€ì •: ë‚®ì€ ê²½ê³ ìŒ (ì‚-)
+                 soundManager.playSound(300, 400); 
+             }
+             showEffectMessage(result.getMessage());
+        }
+
         switch (result.getType()) {
-            case FOOD_EATEN:
-                soundManager.playSound(523 + (result.getCombo() * 50), 100);
-                break;
-            case ITEM_COLLECTED:
-                soundManager.playSound(700, 150);
-                break;
-            case OBSTACLE_DESTROYED:
-                soundManager.playSound(600, 100);
-                break;
-            case PORTAL_USED:
-                soundManager.playSound(800, 100);
-                Timer cooldownTimer = new Timer(500, evt -> gameState.clearPortalCooldown());
-                cooldownTimer.setRepeats(false);
-                cooldownTimer.start();
-                break;
-            case WALL_COLLISION:
-            case SELF_COLLISION:
-            case OBSTACLE_COLLISION:
-                gameOver();
-                break;
+            case FOOD_EATEN: soundManager.playSound(523 + (result.getCombo() * 50), 100); break;
+            case OBSTACLE_DESTROYED: soundManager.playSound(600, 100); break;
+            case PORTAL_USED: soundManager.playSound(800, 100); gameState.clearPortalCooldown(); break;
+            case WALL_COLLISION: case SELF_COLLISION: case OBSTACLE_COLLISION: gameOver(); break;
         }
     }
-    
+
+    private void showEffectMessage(String msg) {
+        if (msg == null) return;
+        currentEffectMessage = msg;
+        if (effectMessageTimer != null && effectMessageTimer.isRunning()) effectMessageTimer.stop();
+        effectMessageTimer = new Timer(2000, e -> { currentEffectMessage = ""; repaint(); });
+        effectMessageTimer.setRepeats(false);
+        effectMessageTimer.start();
+    }
+
     private void gameOver() {
         running = false;
         showResults = true;
         gameTimer.stop();
         soundManager.playSound(200, 500);
-        
-        scoreManager.addScore(
-            PlayerData.getPlayerName(),
-            GameSettings.getMode(),
-            GameSettings.getDisplayDifficulty(),
-            gameState.getScore(),
-            gameState.getMaxCombo(),
-            gameState.getPlayTime(),
-            gameState.getFoodEaten(),
-            gameState.getItemsCollected()
-        );
-        
+        scoreManager.addScore(PlayerData.getPlayerName(), GameSettings.getMode(), GameSettings.getDisplayDifficulty(), 
+                              gameState.getScore(), gameState.getMaxCombo(), gameState.getPlayTime(), gameState.getFoodEaten(), gameState.getItemsCollected());
         repaint();
+        Timer t = new Timer(500, e -> showButtons());
+        t.setRepeats(false); t.start();
     }
-    
-    public void restart() {
-        startNewGame();
-    }
-    
-    public void cycleTheme() {
-        themeManager.cycleTheme();
-        repaint();
-    }
-    
-    public void toggleSound() {
-        soundManager.toggle();
-    }
-    
-    public void handleEnter() {
-        if (showResults) {
-            controller.showScreen(GameScreen.MAIN_MENU);
-        }
-    }
-    
+
+    public void restart() { startNewGame(); }
+    public void cycleTheme() { themeManager.cycleTheme(); repaint(); }
+    public void toggleSound() { soundManager.toggle(); }
+    public void handleEnter() { if (showResults) { controller.showScreen(GameScreen.MAIN_MENU); hideButtons(); } }
+
     public void handleDirection(Point direction) {
-        if (running) {  // paused Á¶°Ç Á¦°Å
-            gameState.getSnake().queueDirection(direction);
+        if (running) {
+            Point target = direction;
+            if (gameState.isReverseInputActive()) target = new Point(-direction.x, -direction.y);
+            gameState.getSnake().queueDirection(target);
         }
     }
     
     @Override
     protected void paintComponent(Graphics g) {
         super.paintComponent(g);
-        renderer.render((Graphics2D) g, gameState, themeManager, 
-                       screenWidth, screenHeight, showResults, scoreManager);
+        renderer.render((Graphics2D) g, gameState, themeManager, screenWidth, screenHeight, showResults, scoreManager, currentEffectMessage);
     }
 }

@@ -1,6 +1,6 @@
 package FinalTerm;
 
-//Snake.java - ¹ì ¿£Æ¼Æ¼ °ü¸®
+//Snake.java - ï¿½ï¿½ ï¿½ï¿½Æ¼Æ¼ ï¿½ï¿½ï¿½ï¿½
 
 import java.awt.Point;
 import java.util.*;
@@ -17,7 +17,7 @@ public class Snake {
         directionQueue = new LinkedList<>();
     }
     
-    // ´ÙÀ½ ¸Ó¸® À§Ä¡¸¸ °è»ê (½ÇÁ¦·Î ÀÌµ¿ÇÏÁö ¾ÊÀ½)
+    // ï¿½ï¿½ï¿½ï¿½ ï¿½Ó¸ï¿½ ï¿½ï¿½Ä¡ï¿½ï¿½ ï¿½ï¿½ï¿½ (ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ ï¿½Ìµï¿½ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½)
     public Point getNextHeadPosition() {
         Point currentDirection = direction;
         if (!directionQueue.isEmpty()) {
@@ -31,7 +31,7 @@ public class Snake {
         );
     }
     
-    // ½ÇÁ¦ ÀÌµ¿ ¼öÇà
+    // ï¿½ï¿½ï¿½ï¿½ ï¿½Ìµï¿½ ï¿½ï¿½ï¿½ï¿½
     public void moveTo(Point newHead) {
         if (!directionQueue.isEmpty()) {
             direction = directionQueue.poll();
@@ -47,11 +47,23 @@ public class Snake {
     }
     
     public void cutTail(int cutLength) {
-        int newSize = Math.max(3, body.size() - cutLength);
+        // 1. í˜„ì¬ ê¸¸ì´ê°€ 3 ì´í•˜ë¼ë©´ ìë¥¼ ìˆ˜ ì—†ìœ¼ë¯€ë¡œ ì•„ë¬´ê²ƒë„ í•˜ì§€ ì•Šê³  ì¢…ë£Œ
+        if (body.size() <= 3) {
+            return;
+        }
+
+        int targetSize = body.size() - cutLength;
+        
+        // 2. ìµœì†Œ ê¸¸ì´ëŠ” 3ìœ¼ë¡œ ìœ ì§€ (3ë³´ë‹¤ ì‘ì•„ì§€ë©´ 3ìœ¼ë¡œ ì„¤ì •)
+        int newSize = Math.max(3, targetSize);
+        
+        // 3. (ì•ˆì „ì¥ì¹˜) í˜¹ì‹œë¼ë„ newSizeê°€ í˜„ì¬ í¬ê¸°ë³´ë‹¤ í¬ë©´ í˜„ì¬ í¬ê¸°ë¡œ ë§ì¶¤
+        newSize = Math.min(newSize, body.size());
+
         body = new ArrayList<>(body.subList(0, newSize));
     }
     
-    // ¸Ó¸®°¡ Ãß°¡µÇ±â Àü¿¡ Ã¼Å©ÇØ¾ß ÇÔ
+    // ï¿½Ó¸ï¿½ï¿½ï¿½ ï¿½ß°ï¿½ï¿½Ç±ï¿½ ï¿½ï¿½ï¿½ï¿½ Ã¼Å©ï¿½Ø¾ï¿½ ï¿½ï¿½
     public boolean checkSelfCollision(Point head) {
         for (int i = 0; i < body.size(); i++) {
             if (body.get(i).equals(head)) {
@@ -69,7 +81,7 @@ public class Snake {
         Point currentDir = directionQueue.isEmpty() ? direction : 
                           directionQueue.toArray(new Point[0])[directionQueue.size() - 1];
         
-        // ¹İ´ë ¹æÇâ Ã¼Å©
+        // ï¿½İ´ï¿½ ï¿½ï¿½ï¿½ï¿½ Ã¼Å©
         if (newDir.x == -currentDir.x && newDir.y == -currentDir.y) return false;
         if (newDir.x == currentDir.x && newDir.y == currentDir.y) return false;
         

@@ -1,20 +1,44 @@
 package FinalTerm;
 
 import java.awt.Point;
-import java.util.*;
+import java.util.Random;
 
 public class GameState {
     private Snake snake;
     private GameBoard board;
     private int score;
-    private int combo;
-    private int maxCombo;
-    private String activeItem;
-    private long lastFoodTime;
-    private long gameStartTime;
-    private boolean portalCooldown;
+    private int playTime;
     private int foodEaten;
     private int itemsCollected;
+    
+    private long lastEatTime;
+    private int currentCombo;
+    private int maxCombo;
+    
+    private long doubleScoreEndTime = 0;
+    private long reverseInputEndTime = 0;
+    private long reducedVisionEndTime = 0;
+    private long speedEffectEndTime = 0;
+    private boolean isSpeedUp = false;
+    private boolean isSpeedDown = false;
+    
+    private long portalEndTime = 0;
+    
+    // 룰렛 관련
+    private boolean isRouletteSpinning = false;
+    private long rouletteEndTime = 0;
+    private String currentRouletteText = "";
+    private boolean currentRoulettePositive = true; // [추가] 룰렛 텍스트 색상 결정용
+    
+    // 옵션 목록 (인덱스 매핑: 0-빠름, 1-느림, 2-2배, 3-반전, 4-암흑, 5-가위)
+    private final String[] rouletteOptions = {
+        "SPEED UP! (BAD)",    // 0: 부정
+        "SPEED DOWN (GOOD)",  // 1: 긍정
+        "X2 SCORE (GOOD)",    // 2: 긍정
+        "REVERSE (BAD)",      // 3: 부정
+        "DARKNESS (BAD)",     // 4: 부정
+        "SCISSORS (GOOD)"     // 5: 긍정
+    };
     
     public GameState() {
         reset();
@@ -22,143 +46,206 @@ public class GameState {
     
     public void reset() {
         snake = new Snake(new Point(10, 10));
-        board = new GameBoard();
+        board = new GameBoard(20, 20);
         score = 0;
-        combo = 0;
-        maxCombo = 0;
-        activeItem = null;
+        playTime = 0;
         foodEaten = 0;
         itemsCollected = 0;
-        portalCooldown = false;
-        gameStartTime = System.currentTimeMillis();
-        lastFoodTime = System.currentTimeMillis();
+        currentCombo = 0;
+        maxCombo = 0;
+        lastEatTime = 0;
         
-        board.spawnFood(snake);
+        board.spawnFood(snake.getBody());
+        board.removePortals();
+        
+        resetEffects();
     }
     
-    public UpdateResult update(Point direction) {
-        Point head = snake.getNextHeadPosition();
+    public void resetEffects() {
+        doubleScoreEndTime = 0;
+        reverseInputEndTime = 0;
+        reducedVisionEndTime = 0;
+        speedEffectEndTime = 0;
+        isSpeedUp = false;
+        isSpeedDown = false;
+        portalEndTime = 0;
         
-        if (!portalCooldown) {
-            Point portalExit = board.checkPortal(head);
-            if (portalExit != null) {
-                head = portalExit;
-                portalCooldown = true;
-                snake.moveTo(head);
-                return new UpdateResult(UpdateResult.Type.PORTAL_USED, head);
-            }
-        }
+        isRouletteSpinning = false;
+        rouletteEndTime = 0;
+        currentRouletteText = "";
+    }
+    
+    public boolean isTimeUp(int limit) { return playTime >= limit; }
+    public int getRemainingTime(int limit) { return Math.max(0, limit - playTime); }
+    
+    public UpdateResult update(Point inputDirection) {
+        Point newHead = snake.getNextHeadPosition();
         
-        if (board.isOutOfBounds(head)) {
-            return new UpdateResult(UpdateResult.Type.WALL_COLLISION, head);
-        }
+        if (board.isWall(newHead)) return new UpdateResult(UpdateResult.Type.WALL_COLLISION, newHead);
+        if (snake.checkSelfCollision(newHead)) return new UpdateResult(UpdateResult.Type.SELF_COLLISION, newHead);
+        if (board.isObstacle(newHead)) return new UpdateResult(UpdateResult.Type.OBSTACLE_COLLISION, newHead);
         
-        if (snake.checkSelfCollision(head)) {
-            return new UpdateResult(UpdateResult.Type.SELF_COLLISION, head);
-        }
+        snake.moveTo(newHead);
+        UpdateResult result = new UpdateResult(UpdateResult.Type.NORMAL_MOVE, newHead);
         
-        if (board.hasObstacle(head)) {
-            if ("hammer".equals(activeItem)) {
-                board.removeObstacle(head);
-                activeItem = null;
-                snake.moveTo(head);
-                return new UpdateResult(UpdateResult.Type.OBSTACLE_DESTROYED, head);
-            }
-            return new UpdateResult(UpdateResult.Type.OBSTACLE_COLLISION, head);
-        }
+        managePortals();
         
-        Food food = board.getFood();
-        boolean ate = false;
-        if (head.equals(food.getPosition())) {
-            ate = true;
-            handleFoodEaten(food);
-            
-            board.spawnFood(snake);
-            
-            if (board.getObstacleCount() < 5 && Math.random() < 0.3) {
-                board.createObstacle(snake);
-            }
-            if (!board.hasSpecialItem() && Math.random() < 0.2) {
-                board.createSpecialItem(snake);
-            }
-            if (snake.getLength() % 10 == 0) {
-                board.createPortals(snake);
+        if (isRouletteSpinning) {
+            UpdateResult rouletteResult = updateRoulette();
+            if (rouletteResult != null) {
+                return rouletteResult;
             }
         }
         
         SpecialItem item = board.getSpecialItem();
-        if (item != null && head.equals(item.getPosition())) {
-            handleItemCollected(item);
-            snake.moveTo(head);
-            return new UpdateResult(UpdateResult.Type.ITEM_COLLECTED, head);
+        if (item != null && item.getPosition().equals(newHead)) {
+            board.removeSpecialItem();
+            itemsCollected++;
+            startRoulette();
+            result = new UpdateResult(UpdateResult.Type.ITEM_COLLECTED, newHead);
         }
         
-        snake.moveTo(head);
-        
-        if (ate) {
+        Food food = board.getFood();
+        if (food != null && food.getPosition().equals(newHead)) {
+            long currentTime = System.currentTimeMillis();
+            if (currentTime - lastEatTime < 2000) currentCombo++;
+            else currentCombo = 0;
+            if (currentCombo > maxCombo) maxCombo = currentCombo;
+            lastEatTime = currentTime;
+            
+            int points = "rare".equals(food.getType()) ? 30 : 10;
+            points += (currentCombo * 5);
+            if (isDoubleScoreActive()) points *= 2;
+            
+            score += points;
+            foodEaten++;
             snake.grow();
-            return new UpdateResult(UpdateResult.Type.FOOD_EATEN, head, combo);
+            board.spawnFood(snake.getBody());
+            
+            Random rnd = new Random();
+            if (rnd.nextInt(100) < 20) board.spawnSpecialItem(snake.getBody());
+            if (rnd.nextInt(100) < 15) board.spawnObstacle(snake.getBody());
+            
+            result = new UpdateResult(UpdateResult.Type.FOOD_EATEN, newHead, currentCombo);
         }
         
-        return new UpdateResult(UpdateResult.Type.NORMAL_MOVE, head);
+        Portal enteredPortal = board.checkPortal(newHead);
+        if (enteredPortal != null) {
+             Point dest = board.getPortalDestination(enteredPortal);
+             if (dest != null) {
+                 snake.setHead(dest);
+                 result = new UpdateResult(UpdateResult.Type.PORTAL_USED, dest);
+             }
+        }
+        
+        return result;
     }
     
-    private void handleFoodEaten(Food food) {
+    private void startRoulette() {
+        isRouletteSpinning = true;
+        rouletteEndTime = System.currentTimeMillis() + 3000;
+    }
+    
+    private UpdateResult updateRoulette() {
         long currentTime = System.currentTimeMillis();
-        long timeDiff = currentTime - lastFoodTime;
         
-        int points = food.getPoints();
-        if (timeDiff < 5000) {  // 2000���� 5000���� ����
-            combo++;
-            points += combo * 5;
-            maxCombo = Math.max(maxCombo, combo);
+        if (currentTime >= rouletteEndTime) {
+            isRouletteSpinning = false;
+            return applyRandomEffect();
         } else {
-            combo = 0;
+            // 룰렛 도는 중: 랜덤 텍스트 보여주기
+            Random r = new Random();
+            int randIdx = r.nextInt(rouletteOptions.length);
+            currentRouletteText = rouletteOptions[randIdx];
+            currentRoulettePositive = isPositiveEffect(randIdx); // 색상 결정을 위해 저장
+            return null;
+        }
+    }
+    
+    // [추가] 긍정 효과인지 판별하는 헬퍼 메서드
+    private boolean isPositiveEffect(int index) {
+        // 1(Slow), 2(Score), 5(Scissors) -> Positive
+        // 0(Fast), 3(Reverse), 4(Darkness) -> Negative
+        return index == 1 || index == 2 || index == 5;
+    }
+    
+    private UpdateResult applyRandomEffect() {
+        int rand = new Random().nextInt(6);
+        long currentTime = System.currentTimeMillis();
+        String effectName = "";
+        
+        // 긍정/부정 여부 판단
+        boolean isPositive = isPositiveEffect(rand);
+        
+        switch (rand) {
+            case 0: // SPEED UP (Bad)
+                isSpeedUp = true; isSpeedDown = false; speedEffectEndTime = currentTime + 5000; 
+                effectName = "SPEED UP! (BAD)"; break;
+            case 1: // SPEED DOWN (Good)
+                isSpeedDown = true; isSpeedUp = false; speedEffectEndTime = currentTime + 5000; 
+                effectName = "SPEED DOWN (GOOD)"; break;
+            case 2: // X2 SCORE (Good)
+                doubleScoreEndTime = currentTime + 10000; 
+                effectName = "DOUBLE SCORE (10s)"; break;
+            case 3: // REVERSE (Bad)
+                reverseInputEndTime = currentTime + 5000; 
+                effectName = "REVERSE CONTROL (5s)"; break;
+            case 4: // DARKNESS (Bad)
+                reducedVisionEndTime = currentTime + 5000; 
+                effectName = "DARKNESS (5s)"; break;
+            case 5: // SCISSORS (Good)
+                snake.cutTail(3); 
+                effectName = "SCISSORS (CUT TAIL)"; break;
         }
         
-        score += points;
-        foodEaten++;
-        lastFoodTime = currentTime;
+        // 최종 결정된 텍스트와 긍정 여부 저장
+        currentRouletteText = effectName;
+        currentRoulettePositive = isPositive;
+        
+        return new UpdateResult(UpdateResult.Type.ROULETTE_FINISHED, snake.getHead(), 0, effectName, isPositive);
+    }
+    
+    private void managePortals() {
+        long currentTime = System.currentTimeMillis();
+        if (board.getPortals() != null) {
+            if (currentTime > portalEndTime) board.removePortals();
+        } else {
+            if (new Random().nextInt(200) == 0) { 
+                board.spawnPortals(snake.getBody());
+                if (board.getPortals() != null) portalEndTime = currentTime + 15000;
+            }
+        }
     }
 
-    
-    private void handleItemCollected(SpecialItem item) {
-        if ("scissors".equals(item.getType())) {
-            int cutLength = (int)(snake.getLength() * 0.3);
-            snake.cutTail(cutLength);
-        } else {
-            activeItem = item.getType();
-        }
-        board.removeSpecialItem();
-        itemsCollected++;
-    }
-    
-    public void clearPortalCooldown() {
-        portalCooldown = false;
-    }
-    
-    public int getPlayTime() {
-        return (int)((System.currentTimeMillis() - gameStartTime) / 1000);
-    }
-    
-    // ���� �ð� ��� (�ð� ���� ����)
-    public int getRemainingTime(int timeLimit) {
-        int elapsed = getPlayTime();
-        return Math.max(0, timeLimit - elapsed);
-    }
-    
-    // �ð� �ʰ� üũ
-    public boolean isTimeUp(int timeLimit) {
-        return getPlayTime() >= timeLimit;
-    }
-    
     // Getters
+    public boolean isRouletteSpinning() { return isRouletteSpinning; }
+    public String getCurrentRouletteText() { return currentRouletteText; }
+    public boolean isCurrentRoulettePositive() { return currentRoulettePositive; } // [추가]
+
+    public boolean isDoubleScoreActive() { return System.currentTimeMillis() < doubleScoreEndTime; }
+    public boolean isReverseInputActive() { return System.currentTimeMillis() < reverseInputEndTime; }
+    public boolean isReducedVisionActive() { return System.currentTimeMillis() < reducedVisionEndTime; }
+    
+    public int getSpeedEffect() {
+        if (System.currentTimeMillis() > speedEffectEndTime) {
+            isSpeedUp = false; isSpeedDown = false; return 0;
+        }
+        if (isSpeedUp) return 1;
+        if (isSpeedDown) return -1;
+        return 0;
+    }
+
+    public void clearPortalCooldown() {}
     public Snake getSnake() { return snake; }
     public GameBoard getBoard() { return board; }
     public int getScore() { return score; }
-    public int getCombo() { return combo; }
     public int getMaxCombo() { return maxCombo; }
-    public String getActiveItem() { return activeItem; }
+    public int getPlayTime() { return playTime; }
+    public void incrementPlayTime() { playTime++; }
     public int getFoodEaten() { return foodEaten; }
     public int getItemsCollected() { return itemsCollected; }
+    public int getCombo() {
+         if (System.currentTimeMillis() - lastEatTime >= 2000) return 0;
+         return currentCombo;
+    }
 }
