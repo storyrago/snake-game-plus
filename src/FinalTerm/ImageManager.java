@@ -12,17 +12,27 @@ public class ImageManager {
     public ImageManager() {
         images = new HashMap<>();
         
+        // 뱀 (사용 안 함)
+        loadImage("head", "head.png");
+        loadImage("body", "body.png");
+        loadImage("tail", "tail.png");
 
-        // [기존] 먹이
+        // 먹이
         loadImage("food_normal", "apple.png");
         loadImage("food_rare", "goldenapple.png");
         
-        // [기존] 랜덤 아이템
+        // 랜덤 아이템
         loadImage("item_random", "randombox.png");
         
-        // [추가] 포탈 이미지 로드
+        // 포탈
         loadImage("portal_purple", "portal_purple.png");
         loadImage("portal_blue", "portal_blue.png");
+        
+        // [수정] 망치 아이템 -> hammer.png
+        loadImage("hammer", "hammer.png");
+        
+        // [수정] 메인 메뉴 로고 -> snakegame.png
+        loadImage("logo", "snakegame.png");
     }
 
     private void loadImage(String key, String fileName) {

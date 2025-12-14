@@ -5,12 +5,14 @@ import java.awt.*;
 
 public class MainMenuPanel extends GradientPanel {
     private SnakeGameController controller;
+    private ImageManager imageManager; // [추가] 이미지 매니저
     private Timer pulseTimer;
     private float pulseAlpha = 0.0f;
     
     public MainMenuPanel(SnakeGameController controller) {
         super(new Color(15, 15, 35), new Color(35, 15, 45), true);
         this.controller = controller;
+        this.imageManager = new ImageManager(); // [추가] 초기화
         setLayout(new BorderLayout());
         
         initComponents();
@@ -26,18 +28,53 @@ public class MainMenuPanel extends GradientPanel {
                 Graphics2D g2d = (Graphics2D) g;
                 g2d.setRenderingHint(RenderingHints.KEY_TEXT_ANTIALIASING, 
                                     RenderingHints.VALUE_TEXT_ANTIALIAS_ON);
+                g2d.setRenderingHint(RenderingHints.KEY_ANTIALIASING, 
+                                    RenderingHints.VALUE_ANTIALIAS_ON); // 이미지 부드럽게
                 
-                // Draw "SNAKE" with glow effect
+                // 1. 폰트 및 텍스트 설정
                 String mainTitle = "SNAKE";
                 Font titleFont = new Font("Arial", Font.BOLD, 72);
                 g2d.setFont(titleFont);
                 FontMetrics fm = g2d.getFontMetrics();
                 
-                int centerX = getWidth() / 2;
-                int titleY = 90;
-                int titleX = centerX - fm.stringWidth(mainTitle) / 2;
+                // 2. 이미지 로드 및 크기 계산
+                Image logo = imageManager.getImage("logo"); // snakegame.png
+                int logoSize = 80; // 로고 크기 (텍스트 높이와 비슷하게)
+                int gap = 25;      // 로고와 텍스트 사이 간격
                 
-                // Outer glow layers
+                int textWidth = fm.stringWidth(mainTitle);
+                
+                // 3. 전체 너비 계산 (로고 + 간격 + 텍스트)
+                int totalWidth = textWidth;
+                if (logo != null) {
+                    totalWidth += (logoSize + gap);
+                }
+                
+                // 4. 중앙 정렬을 위한 시작점(X) 계산
+                int centerX = getWidth() / 2;
+                int startX = centerX - (totalWidth / 2);
+                int titleY = 90; // 텍스트 기준선(Baseline)
+                
+                // 5. 로고 그리기 (왼쪽)
+                if (logo != null) {
+                    // 텍스트 베이스라인에 맞춰 이미지 Y좌표 조정
+                    int logoY = titleY - logoSize + 10; 
+                    
+                    // 로고 그림자/글로우 (펄스 효과 적용)
+                    int shadowAlpha = (int)(50 * pulseAlpha);
+                    g2d.setColor(new Color(0, 255, 0, shadowAlpha));
+                    g2d.fillOval(startX + 5, logoY + 5, logoSize - 10, logoSize - 10);
+                    
+                    g2d.drawImage(logo, startX, logoY, logoSize, logoSize, null);
+                }
+                
+                // 6. 텍스트 그리기 (로고 오른쪽으로 위치 이동)
+                int titleX = startX;
+                if (logo != null) {
+                    titleX += (logoSize + gap);
+                }
+
+                // Outer glow layers (기존 효과 유지)
                 for (int i = 8; i > 0; i--) {
                     int alpha = (int)(30 * pulseAlpha * (8 - i) / 8.0);
                     g2d.setColor(new Color(0, 255, 0, alpha));
@@ -59,6 +96,8 @@ public class MainMenuPanel extends GradientPanel {
                 g2d.setPaint(gp);
                 g2d.drawString(mainTitle, titleX, titleY);
                 
+                // --- 아래는 기존 서브타이틀 및 장식 라인 유지 ---
+                
                 // Draw "GAME+" subtitle
                 String subtitle = "GAME+";
                 Font subtitleFont = new Font("Arial", Font.BOLD, 28);
@@ -66,6 +105,7 @@ public class MainMenuPanel extends GradientPanel {
                 fm = g2d.getFontMetrics();
                 
                 int subtitleY = 130;
+                // 서브타이틀은 화면 정중앙 유지
                 int subtitleX = centerX - fm.stringWidth(subtitle) / 2;
                 
                 // Subtitle glow
@@ -101,7 +141,7 @@ public class MainMenuPanel extends GradientPanel {
         
         add(titlePanel, BorderLayout.NORTH);
         
-        // Button Panel
+        // Button Panel (기존 코드 유지)
         JPanel buttonPanel = new JPanel();
         buttonPanel.setOpaque(false);
         buttonPanel.setLayout(new GridLayout(5, 1, 0, 15));
@@ -127,7 +167,7 @@ public class MainMenuPanel extends GradientPanel {
         
         add(buttonPanel, BorderLayout.CENTER);
         
-        // Footer
+        // Footer (기존 코드 유지)
         JLabel versionLabel = new JLabel("Version 1.0  |  2025", SwingConstants.CENTER);
         versionLabel.setFont(new Font("Arial", Font.PLAIN, 11));
         versionLabel.setForeground(new Color(80, 80, 80));
@@ -135,6 +175,7 @@ public class MainMenuPanel extends GradientPanel {
         add(versionLabel, BorderLayout.SOUTH);
     }
     
+    // 버튼 스타일링 메서드 (기존 코드 유지)
     private JButton createStyledButton(String text, Color normalColor, Color hoverColor) {
         JButton button = new JButton(text);
         button.setFont(new Font("Arial", Font.BOLD, 20));

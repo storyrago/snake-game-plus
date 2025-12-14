@@ -25,13 +25,14 @@ public class GameRenderer {
         
         drawBackground(g2d, theme, screenWidth, screenHeight);
         drawObstacles(g2d, gameState.getBoard().getObstacles());
-        
-        // 포탈 (이미지 적용)
         drawPortals(g2d, gameState.getBoard().getPortals());
         
         drawFood(g2d, gameState.getBoard().getFood(), theme);
         drawSpecialItem(g2d, gameState.getBoard().getSpecialItem());
+        
+        // 망치 그리기
         drawHammer(g2d, gameState.getBoard().getHammer());
+        
         drawSnake(g2d, gameState.getSnake(), theme);
         
         if (gameState.isReducedVisionActive()) {
@@ -54,33 +55,46 @@ public class GameRenderer {
         }
     }
 
-    // [수정된 메서드] portal_blue 적용
+    // [수정] hammer.png 이미지 사용
+    private void drawHammer(Graphics2D g2d, SpecialItem item) {
+        if (item == null) return;
+        Point pos = item.getPosition();
+        
+        Image hammerImg = imageManager.getImage("hammer");
+        
+        if (hammerImg != null) {
+            g2d.drawImage(hammerImg, pos.x * CELL_SIZE, pos.y * CELL_SIZE, CELL_SIZE, CELL_SIZE, null);
+        } else {
+            // 이미지 없으면 기본 도형
+            g2d.setColor(new Color(255, 140, 0));
+            g2d.fillRect(pos.x * CELL_SIZE + 2, pos.y * CELL_SIZE + 2, CELL_SIZE - 4, CELL_SIZE - 4);
+            g2d.setColor(Color.WHITE);
+            g2d.setFont(new Font("Arial", Font.BOLD, 16));
+            g2d.drawString("H", pos.x * CELL_SIZE + 8, pos.y * CELL_SIZE + 18);
+        }
+    }
+    
+    // ... 나머지 메서드 유지 ...
+
     private void drawPortals(Graphics2D g2d, Portal[] portals) {
         if (portals == null) return;
-        
         for (int i = 0; i < portals.length; i++) {
             Point p = portals[i].getPosition();
             Image portalImg = null;
-            
-            // 인덱스 0: purple, 인덱스 1: blue (수정됨)
             if (i == 0) {
                 portalImg = imageManager.getImage("portal_purple");
             } else {
-                portalImg = imageManager.getImage("portal_blue"); // [수정]
+                portalImg = imageManager.getImage("portal_blue");
             }
-
             if (portalImg != null) {
                 g2d.drawImage(portalImg, p.x * CELL_SIZE, p.y * CELL_SIZE, CELL_SIZE, CELL_SIZE, null);
             } else {
-                // 예비용 색상도 Blue로 변경
-                Color portalColor = i == 0 ? new Color(255, 0, 255) : Color.BLUE; // [수정]
+                Color portalColor = i == 0 ? new Color(255, 0, 255) : Color.BLUE;
                 g2d.setColor(new Color(portalColor.getRed(), portalColor.getGreen(), portalColor.getBlue(), 150));
                 g2d.fillOval(p.x * CELL_SIZE + 2, p.y * CELL_SIZE + 2, CELL_SIZE - 4, CELL_SIZE - 4);
             }
         }
     }
-
-    // ... 아래는 기존 코드 유지 ...
     
     private void drawFood(Graphics2D g2d, Food food, ThemeManager.ColorTheme theme) {
         if (food == null) return;
@@ -117,16 +131,6 @@ public class GameRenderer {
             g2d.setFont(new Font("Arial", Font.BOLD, 16));
             g2d.drawString("?", pos.x * CELL_SIZE + 8, pos.y * CELL_SIZE + 18);
         }
-    }
-    
-    private void drawHammer(Graphics2D g2d, SpecialItem item) {
-        if (item == null) return;
-        Point pos = item.getPosition();
-        g2d.setColor(new Color(255, 140, 0));
-        g2d.fillRect(pos.x * CELL_SIZE + 2, pos.y * CELL_SIZE + 2, CELL_SIZE - 4, CELL_SIZE - 4);
-        g2d.setColor(Color.WHITE);
-        g2d.setFont(new Font("Arial", Font.BOLD, 16));
-        g2d.drawString("H", pos.x * CELL_SIZE + 8, pos.y * CELL_SIZE + 18);
     }
     
     private void drawSnake(Graphics2D g2d, Snake snake, ThemeManager.ColorTheme theme) {
