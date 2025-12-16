@@ -1,6 +1,5 @@
 package FinalTerm;
 
-
 import javax.swing.*;
 import java.awt.*;
 
@@ -15,7 +14,7 @@ public class SnakeGameController {
     
     private MainMenuPanel mainMenuPanel;
     private NameInputPanel nameInputPanel;
-    private GameSettingsPanel settingsPanel;  // �߰�
+    private GameSettingsPanel settingsPanel;
     private SnakeGame snakeGame;
     private RankingPanel rankingPanel;
     private RulesPanel rulesPanel;
@@ -50,7 +49,7 @@ public class SnakeGameController {
         nameInputPanel = new NameInputPanel(this);
         nameInputPanel.setPreferredSize(panelSize);
         
-        settingsPanel = new GameSettingsPanel(this);  // �߰�
+        settingsPanel = new GameSettingsPanel(this);
         
         snakeGame = new SnakeGame(this, themeManager, soundManager, scoreManager);
         
@@ -65,7 +64,7 @@ public class SnakeGameController {
         
         mainPanel.add(mainMenuPanel, GameScreen.MAIN_MENU.name());
         mainPanel.add(nameInputPanel, GameScreen.NAME_INPUT.name());
-        mainPanel.add(settingsPanel, GameScreen.SETTINGS.name());  // �߰�
+        mainPanel.add(settingsPanel, GameScreen.SETTINGS.name());
         mainPanel.add(snakeGame, GameScreen.PLAYING.name());
         mainPanel.add(rankingPanel, GameScreen.RANKING.name());
         mainPanel.add(rulesPanel, GameScreen.RULES.name());
@@ -76,18 +75,30 @@ public class SnakeGameController {
         cardLayout.show(mainPanel, screen.name());
         frame.pack();
         
+        // [수정] 모든 화면에서 배경음악이 나오도록 설정
+        // loopClip 내부에 "이미 재생 중이면 유지"하는 로직이 있으므로 계속 호출해도 괜찮음
+        soundManager.loopClip("bgm");
+        
+        // 화면별 로직
         switch (screen) {
-            case NAME_INPUT:
-                nameInputPanel.focusNameField();
-                break;
             case PLAYING:
+                // 기존의 soundManager.stopClip("bgm"); 코드를 삭제함
                 snakeGame.startNewGame();
                 snakeGame.requestFocusInWindow();
                 break;
+                
+            case NAME_INPUT:
+                nameInputPanel.focusNameField();
+                break;
+                
             case RANKING:
                 rankingPanel.updateScores();
                 break;
         }
+    }
+    
+    public SoundManager getSoundManager() {
+        return soundManager;
     }
     
     public void show() {

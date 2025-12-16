@@ -1,144 +1,109 @@
 package FinalTerm;
 
-//ScoreManager.java - Á¡¼ö ¹× ±â·Ï °ü¸®
-
-import java.util.*;
 import java.io.*;
+import java.util.*;
 
 public class ScoreManager {
-    // ¸ðµå¿Í ³­ÀÌµµº°·Î ·©Å· °ü¸®
-    private Map<String, List<ScoreRecord>> rankingsByModeAndDifficulty;
-    private static final String SAVE_FILE = "snake_scores.dat";
+    private static final String FILE_NAME = "scores.dat";
+    private Map<String, List<ScoreRecord>> scores;
     
     public ScoreManager() {
-        rankingsByModeAndDifficulty = new HashMap<>();
+        scores = new HashMap<>();
         loadScores();
     }
     
-    private String getRankingKey(GameMode mode, GameDifficulty difficulty) {
-        return mode.name() + "_" + difficulty.name();
-    }
-    
     public void addScore(String playerName, GameMode mode, GameDifficulty difficulty, 
-                        int score, int maxCombo, int playTime, int foodEaten, int itemsCollected) {
+                        int score, int maxCombo, long playTime, int foodEaten, int itemsCollected) {
+        String key = mode.name() + "_" + difficulty.name();
+        List<ScoreRecord> list = scores.computeIfAbsent(key, k -> new ArrayList<>());
         
-        String key = getRankingKey(mode, difficulty);
-        List<ScoreRecord> rankings = rankingsByModeAndDifficulty.computeIfAbsent(key, k -> new ArrayList<>());
-        
-        ScoreRecord newRecord = new ScoreRecord(playerName, mode, difficulty, score, maxCombo, playTime, foodEaten, itemsCollected);
-        
-        // °°Àº ÀÌ¸§ÀÇ ±â·Ï Ã£±â
+        // [ìˆ˜ì •] ì¤‘ë³µ ì´ë¦„ í™•ì¸ ë° ìµœê³  ì ìˆ˜ ê°±ì‹  ë¡œì§
         ScoreRecord existingRecord = null;
-        for (ScoreRecord record : rankings) {
+        for (ScoreRecord record : list) {
             if (record.playerName.equals(playerName)) {
                 existingRecord = record;
                 break;
             }
         }
-        
-        // °°Àº ÀÌ¸§ÀÌ ÀÖÀ¸¸é
+
         if (existingRecord != null) {
-            // »õ Á¡¼ö°¡ ´õ ³ôÀ» ¶§¸¸ ±³Ã¼
-            if (newRecord.score > existingRecord.score) {
-                rankings.remove(existingRecord);
-                rankings.add(newRecord);
+            // ì´ë¯¸ ì¡´ìž¬í•˜ëŠ” ì´ë¦„ì¸ ê²½ìš°
+            if (score > existingRecord.score) {
+                // ì‹ ê¸°ë¡ì´ ë” ë†’ìœ¼ë©´ ê¸°ì¡´ ê¸°ë¡ ì‚­ì œ í›„ ìƒˆ ê¸°ë¡ ì¶”ê°€
+                list.remove(existingRecord);
+                list.add(new ScoreRecord(playerName, score, maxCombo, playTime, foodEaten, itemsCollected));
             }
+            // ì‹ ê¸°ë¡ì´ ë‚®ê±°ë‚˜ ê°™ìœ¼ë©´ ë¬´ì‹œ (ê¸°ì¡´ ì ìˆ˜ ìœ ì§€)
         } else {
-            // °°Àº ÀÌ¸§ÀÌ ¾øÀ¸¸é »õ·Î Ãß°¡
-            rankings.add(newRecord);
+            // ìƒˆ ì´ë¦„ì´ë©´ ê·¸ëƒ¥ ì¶”ê°€
+            list.add(new ScoreRecord(playerName, score, maxCombo, playTime, foodEaten, itemsCollected));
         }
         
-        // Á¡¼ö¼øÀ¸·Î Á¤·Ä
-        rankings.sort((a, b) -> Integer.compare(b.score, a.score));
+        // ì ìˆ˜ ë‚´ë¦¼ì°¨ìˆœ ì •ë ¬
+        Collections.sort(list, (a, b) -> b.score - a.score);
         
-        // »óÀ§ 10°³¸¸ À¯Áö
-        if (rankings.size() > 10) {
-            rankingsByModeAndDifficulty.put(key, new ArrayList<>(rankings.subList(0, 10)));
+        // ìƒìœ„ 10ê°œë§Œ ìœ ì§€
+        if (list.size() > 10) {
+            scores.put(key, new ArrayList<>(list.subList(0, 10)));
         }
         
         saveScores();
     }
     
-    // Æ¯Á¤ ¸ðµå + ³­ÀÌµµÀÇ ·©Å· °¡Á®¿À±â
     public List<ScoreRecord> getHighScores(GameMode mode, GameDifficulty difficulty) {
-        String key = getRankingKey(mode, difficulty);
-        return new ArrayList<>(rankingsByModeAndDifficulty.getOrDefault(key, new ArrayList<>()));
+        String key = mode.name() + "_" + difficulty.name();
+        return scores.getOrDefault(key, new ArrayList<>());
     }
     
-    // Æ¯Á¤ ¸ðµåÀÇ ¸ðµç ³­ÀÌµµ ·©Å· °¡Á®¿À±â
-    public Map<GameDifficulty, List<ScoreRecord>> getHighScoresByMode(GameMode mode) {
-        Map<GameDifficulty, List<ScoreRecord>> result = new HashMap<>();
-        for (GameDifficulty diff : GameDifficulty.values()) {
-            result.put(diff, getHighScores(mode, diff));
-        }
-        return result;
+    public int getTopScore(GameMode mode, GameDifficulty difficulty) {
+        List<ScoreRecord> list = getHighScores(mode, difficulty);
+        if (list.isEmpty()) return 0;
+        return list.get(0).score;
     }
     
     public void clearScores() {
-        rankingsByModeAndDifficulty.clear();
-        try {
-            java.io.File file = new java.io.File(SAVE_FILE);
-            if (file.exists()) {
-                file.delete();
-            }
-        } catch (Exception e) {
-            System.err.println("Failed to delete score file: " + e.getMessage());
-        }
-    }
-    
-    public void clearScores(GameMode mode) {
-        // ÇØ´ç ¸ðµåÀÇ ¸ðµç ³­ÀÌµµ ·©Å· »èÁ¦
-        for (GameDifficulty diff : GameDifficulty.values()) {
-            String key = getRankingKey(mode, diff);
-            rankingsByModeAndDifficulty.remove(key);
-        }
+        scores.clear();
         saveScores();
-    }
-    
-    public void clearScores(GameMode mode, GameDifficulty difficulty) {
-        String key = getRankingKey(mode, difficulty);
-        rankingsByModeAndDifficulty.remove(key);
-        saveScores();
-    }
-    
-    private void saveScores() {
-        try (ObjectOutputStream oos = new ObjectOutputStream(new FileOutputStream(SAVE_FILE))) {
-            oos.writeObject(rankingsByModeAndDifficulty);
-        } catch (Exception e) {
-            System.err.println("Failed to save scores: " + e.getMessage());
-        }
     }
     
     @SuppressWarnings("unchecked")
     private void loadScores() {
-        try (ObjectInputStream ois = new ObjectInputStream(new FileInputStream(SAVE_FILE))) {
-            rankingsByModeAndDifficulty = (Map<String, List<ScoreRecord>>) ois.readObject();
-        } catch (Exception e) {
-            rankingsByModeAndDifficulty = new HashMap<>();
+        File file = new File(FILE_NAME);
+        if (file.exists()) {
+            try (ObjectInputStream ois = new ObjectInputStream(new FileInputStream(file))) {
+                scores = (Map<String, List<ScoreRecord>>) ois.readObject();
+            } catch (Exception e) {
+                scores = new HashMap<>();
+            }
+        }
+    }
+    
+    private void saveScores() {
+        try (ObjectOutputStream oos = new ObjectOutputStream(new FileOutputStream(FILE_NAME))) {
+            oos.writeObject(scores);
+        } catch (IOException e) {
+            e.printStackTrace();
         }
     }
     
     public static class ScoreRecord implements Serializable {
         private static final long serialVersionUID = 1L;
-        public final String playerName;
-        public final GameMode mode;
-        public final GameDifficulty difficulty;
-        public final int score;
-        public final int maxCombo;
-        public final int playTime;
-        public final int foodEaten;
-        public final int itemsCollected;
+        public String playerName;
+        public int score;
+        public int maxCombo;
+        public long playTime;
+        public int foodEaten;
+        public int itemsCollected;
+        public long date;
         
-        public ScoreRecord(String playerName, GameMode mode, GameDifficulty difficulty,
-                          int score, int maxCombo, int playTime, int foodEaten, int itemsCollected) {
-            this.playerName = playerName;
-            this.mode = mode;
-            this.difficulty = difficulty;
+        public ScoreRecord(String name, int score, int combo, long time, int food, int items) {
+            this.playerName = name;
             this.score = score;
-            this.maxCombo = maxCombo;
-            this.playTime = playTime;
-            this.foodEaten = foodEaten;
-            this.itemsCollected = itemsCollected;
+            this.maxCombo = combo;
+            this.playTime = time;
+            this.foodEaten = food;
+            this.itemsCollected = items;
+            this.date = System.currentTimeMillis();
         }
     }
 }

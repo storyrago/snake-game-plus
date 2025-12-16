@@ -5,14 +5,27 @@ import java.awt.*;
 import java.awt.geom.Area;
 import java.awt.geom.Ellipse2D;
 import java.awt.geom.Rectangle2D;
+import java.util.ArrayList;
+import java.util.Iterator;
 import java.util.List;
 
 public class GameRenderer {
     private static final int CELL_SIZE = 25;
     private ImageManager imageManager;
+    
+    // [추가] 부유하는 텍스트 효과 관리 리스트
+    private List<FloatingText> floatingTexts;
 
     public GameRenderer() {
         imageManager = new ImageManager(); 
+        floatingTexts = new ArrayList<>();
+    }
+    
+    // [추가] 외부에서 호출하여 텍스트 효과 생성
+    public void addFloatingScore(Point position, int score) {
+        int pixelX = position.x * CELL_SIZE;
+        int pixelY = position.y * CELL_SIZE;
+        floatingTexts.add(new FloatingText(pixelX, pixelY, "+" + score));
     }
 
     public void render(Graphics2D g2d, GameState gameState, ThemeManager themeManager, 
@@ -30,10 +43,12 @@ public class GameRenderer {
         drawFood(g2d, gameState.getBoard().getFood(), theme);
         drawSpecialItem(g2d, gameState.getBoard().getSpecialItem());
         
-        // 망치 그리기
         drawHammer(g2d, gameState.getBoard().getHammer());
         
         drawSnake(g2d, gameState.getSnake(), theme);
+        
+        // [추가] 플로팅 텍스트 렌더링
+        drawFloatingTexts(g2d);
         
         if (gameState.isReducedVisionActive()) {
             drawDarkness(g2d, gameState.getSnake().getHead(), screenWidth, screenHeight);
@@ -54,8 +69,33 @@ public class GameRenderer {
             drawResultsScreen(g2d, gameState, scoreManager, screenWidth, screenHeight);
         }
     }
+    
+    // [추가] 텍스트 효과 그리기 및 상태 업데이트
+    private void drawFloatingTexts(Graphics2D g2d) {
+        if (floatingTexts.isEmpty()) return;
 
-    // [수정] hammer.png 이미지 사용
+        Iterator<FloatingText> it = floatingTexts.iterator();
+        while (it.hasNext()) {
+            FloatingText ft = it.next();
+            
+            g2d.setFont(new Font("Arial", Font.BOLD, 16));
+            
+            // 그림자
+            g2d.setColor(new Color(0, 0, 0, (int)(ft.alpha * 255)));
+            g2d.drawString(ft.text, ft.x + 1, (int)ft.y + 1);
+            
+            // 본문 (금색)
+            g2d.setColor(new Color(255, 215, 0, (int)(ft.alpha * 255)));
+            g2d.drawString(ft.text, ft.x, (int)ft.y);
+            
+            ft.update();
+            
+            if (!ft.isAlive()) {
+                it.remove();
+            }
+        }
+    }
+
     private void drawHammer(Graphics2D g2d, SpecialItem item) {
         if (item == null) return;
         Point pos = item.getPosition();
@@ -65,7 +105,6 @@ public class GameRenderer {
         if (hammerImg != null) {
             g2d.drawImage(hammerImg, pos.x * CELL_SIZE, pos.y * CELL_SIZE, CELL_SIZE, CELL_SIZE, null);
         } else {
-            // 이미지 없으면 기본 도형
             g2d.setColor(new Color(255, 140, 0));
             g2d.fillRect(pos.x * CELL_SIZE + 2, pos.y * CELL_SIZE + 2, CELL_SIZE - 4, CELL_SIZE - 4);
             g2d.setColor(Color.WHITE);
@@ -73,8 +112,6 @@ public class GameRenderer {
             g2d.drawString("H", pos.x * CELL_SIZE + 8, pos.y * CELL_SIZE + 18);
         }
     }
-    
-    // ... 나머지 메서드 유지 ...
 
     private void drawPortals(Graphics2D g2d, Portal[] portals) {
         if (portals == null) return;
@@ -195,7 +232,7 @@ public class GameRenderer {
         g2d.drawRoundRect(x, y, boxWidth, boxHeight, 15, 15);
         g2d.setColor(Color.LIGHT_GRAY);
         g2d.setFont(new Font("Arial", Font.ITALIC, 12));
-        g2d.drawString("Item Roulette...", x + 15, y + 20);
+        g2d.drawString("룰렛 돌리는중...", x + 15, y + 20);
         g2d.setFont(new Font("Arial", Font.BOLD, 20));
         FontMetrics fm = g2d.getFontMetrics();
         int textX = x + (boxWidth - fm.stringWidth(text)) / 2;
@@ -223,17 +260,17 @@ public class GameRenderer {
         g2d.setColor(Color.WHITE);
         g2d.setFont(new Font("Arial", Font.BOLD, 14));
         int y = gameAreaHeight + 25;
-        g2d.drawString("Score: " + gameState.getScore(), 10, y);
-        g2d.drawString("Length: " + gameState.getSnake().getLength(), 150, y);
+        g2d.drawString("점수: " + gameState.getScore(), 10, y);
+        g2d.drawString("길이: " + gameState.getSnake().getLength(), 150, y);
         
         if (gameState.hasHammer()) {
             g2d.setColor(new Color(255, 140, 0));
-            g2d.drawString("[HAMMER Equipped]", 280, y);
+            g2d.drawString("[해머 장착..!!]", 280, y);
             g2d.setColor(Color.WHITE);
         } else if (GameSettings.getMode() == GameMode.TIME_ATTACK) {
             int remainingTime = gameState.getRemainingTime(GameSettings.getTimeLimit());
             g2d.setColor(remainingTime <= 10 ? Color.RED : Color.CYAN);
-            g2d.drawString("Time: " + remainingTime + "s", 280, y);
+            g2d.drawString("시간: " + remainingTime + "초", 280, y);
             g2d.setColor(Color.WHITE);
         } else if (gameState.getCombo() > 0) {
             g2d.setColor(Color.YELLOW);
@@ -242,11 +279,11 @@ public class GameRenderer {
         }
         
         String status = "";
-        if (gameState.isDoubleScoreActive()) status += "[x2 Score] ";
-        if (gameState.isReverseInputActive()) status += "[Reverse] ";
+        if (gameState.isDoubleScoreActive()) status += "[점수 2배!] ";
+        if (gameState.isReverseInputActive()) status += "[리버스!] ";
         int speed = gameState.getSpeedEffect();
-        if (speed == 1) status += "[Fast] ";
-        if (speed == -1) status += "[Slow] ";
+        if (speed == 1) status += "[빠름] ";
+        if (speed == -1) status += "[느림] ";
         
         g2d.setColor(new Color(0, 255, 255));
         g2d.drawString(status, 10, y + 25);
@@ -254,8 +291,8 @@ public class GameRenderer {
         g2d.setFont(new Font("Arial", Font.PLAIN, 12));
         int guideY = y + 55;
         g2d.setColor(Color.WHITE);
-        g2d.drawString("R: Restart | T: Theme | M: Sound", 10, guideY);
-        g2d.drawString("?: Random Box | H: Hammer (Auto-use on Hit)", 10, guideY + 20);
+        g2d.drawString("R: 재시작 | T: 테마 | M: 사운드", 10, guideY);
+        g2d.drawString("?: 랜덤아이템 | H: 해머 (자동 사용)", 10, guideY + 20);
     }
 
     private void drawResultsScreen(Graphics2D g2d, GameState gameState, ScoreManager scoreManager, int width, int height) {
@@ -263,23 +300,23 @@ public class GameRenderer {
         g2d.fillRect(0, 0, width, GameBoard.getGridSize() * CELL_SIZE);
         g2d.setColor(Color.WHITE);
         g2d.setFont(new Font("Arial", Font.BOLD, 36));
-        String text = "GAME OVER";
+        String text = "게임 오버";
         int x = (width - g2d.getFontMetrics().stringWidth(text)) / 2;
         g2d.drawString(text, x, 80);
         g2d.setFont(new Font("Arial", Font.BOLD, 18));
         g2d.setColor(Color.YELLOW);
-        g2d.drawString("Play Record", 50, 130);
+        g2d.drawString("플레이 기록", 50, 130);
         g2d.setFont(new Font("Arial", Font.PLAIN, 14));
         g2d.setColor(Color.WHITE);
         int lineY = 155;
-        g2d.drawString("Final Score: " + gameState.getScore(), 50, lineY);
-        g2d.drawString("Max Combo: x" + gameState.getMaxCombo(), 50, lineY + 25);
+        g2d.drawString("최종 점수: " + gameState.getScore(), 50, lineY);
+        g2d.drawString("최대 콤보: x" + gameState.getMaxCombo(), 50, lineY + 25);
         List<ScoreManager.ScoreRecord> highScores = scoreManager.getHighScores(
             GameSettings.getMode(), GameSettings.getDisplayDifficulty());
         if (!highScores.isEmpty()) {
             g2d.setFont(new Font("Arial", Font.BOLD, 18));
             g2d.setColor(Color.YELLOW);
-            g2d.drawString("Top 5 Ranking", 50, lineY + 140);
+            g2d.drawString("Top 5", 50, lineY + 140);
             g2d.setFont(new Font("Arial", Font.PLAIN, 14));
             g2d.setColor(Color.WHITE);
             for (int i = 0; i < Math.min(5, highScores.size()); i++) {
@@ -287,6 +324,30 @@ public class GameRenderer {
                 g2d.drawString((i + 1) + ". " + record.playerName + " - " + record.score + " pts", 
                               50, lineY + 170 + i * 25);
             }
+        }
+    }
+    
+    // [추가] 내부 클래스: 부유 텍스트
+    private class FloatingText {
+        int x;
+        float y;
+        String text;
+        float alpha;
+
+        public FloatingText(int x, int y, String text) {
+            this.x = x;
+            this.y = y;
+            this.text = text;
+            this.alpha = 1.0f;
+        }
+
+        public void update() {
+            y -= 1.0f; // 위로 이동
+            alpha -= 0.02f; // 투명도 감소
+        }
+
+        public boolean isAlive() {
+            return alpha > 0;
         }
     }
 }

@@ -11,7 +11,7 @@ public class RankingPanel extends JPanel {
     private ScoreManager scoreManager;
     private JTabbedPane modeTabbedPane;
     
-    // °¢ ¸ğµå¿Í ³­ÀÌµµº° ÆĞ³ÎÀ» ÀúÀå
+    // ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½Ìµï¿½ï¿½ï¿½ ï¿½Ğ³ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½
     private Map<String, JPanel> scorePanels;
     
     public RankingPanel(SnakeGameController controller, ScoreManager scoreManager) {
@@ -26,36 +26,36 @@ public class RankingPanel extends JPanel {
     }
     
     private void initComponents() {
-        // Å¸ÀÌÆ²
-        JLabel titleLabel = new JLabel("RANKING", SwingConstants.CENTER);
+        // Å¸ï¿½ï¿½Æ²
+        JLabel titleLabel = new JLabel("ë­í‚¹", SwingConstants.CENTER);
         titleLabel.setFont(new Font("Arial", Font.BOLD, 40));
         titleLabel.setForeground(new Color(255, 215, 0));
         titleLabel.setBorder(BorderFactory.createEmptyBorder(30, 0, 20, 0));
         add(titleLabel, BorderLayout.NORTH);
         
-        // ¸ğµå ÅÇ
+        // ï¿½ï¿½ï¿½ ï¿½ï¿½
         modeTabbedPane = new JTabbedPane();
         modeTabbedPane.setFont(new Font("Arial", Font.BOLD, 16));
         modeTabbedPane.setBackground(new Color(26, 26, 26));
         modeTabbedPane.setForeground(Color.WHITE);
         
-        // Classic Mode ÅÇ
+        // Classic Mode ï¿½ï¿½
         JTabbedPane classicDifficultyTabs = createDifficultyTabs(GameMode.CLASSIC);
-        modeTabbedPane.addTab("Classic Mode", classicDifficultyTabs);
+        modeTabbedPane.addTab("í´ë˜ì‹ ëª¨ë“œ", classicDifficultyTabs);
         
-        // Time Attack ÅÇ
+        // Time Attack ï¿½ï¿½
         JTabbedPane timeAttackDifficultyTabs = createDifficultyTabs(GameMode.TIME_ATTACK);
-        modeTabbedPane.addTab("Time Attack", timeAttackDifficultyTabs);
+        modeTabbedPane.addTab("íƒ€ì„ ì–´íƒ", timeAttackDifficultyTabs);
         
         add(modeTabbedPane, BorderLayout.CENTER);
         
-        // ÇÏ´Ü ¹öÆ°
+        // ï¿½Ï´ï¿½ ï¿½ï¿½Æ°
         JPanel bottomPanel = new JPanel();
         bottomPanel.setLayout(new FlowLayout(FlowLayout.CENTER, 15, 0));
         bottomPanel.setBackground(new Color(26, 26, 26));
         bottomPanel.setBorder(BorderFactory.createEmptyBorder(20, 0, 20, 0));
         
-        JButton clearButton = new JButton("Clear All Rankings");
+        JButton clearButton = new JButton("ë­í‚¹ ê¸°ë¡ ì§€ìš°ê¸°");
         clearButton.setFont(new Font("Arial", Font.BOLD, 16));
         clearButton.setBackground(new Color(220, 53, 69));
         clearButton.setForeground(Color.WHITE);
@@ -67,8 +67,8 @@ public class RankingPanel extends JPanel {
         clearButton.addActionListener(e -> {
             int confirm = JOptionPane.showConfirmDialog(
                 this, 
-                "Delete all rankings?\nThis cannot be undone!", 
-                "Clear Rankings", 
+                "ëª¨ë“  ë­í‚¹ì„ ì§€ìš°ì‹œê² ìŠµë‹ˆê¹Œ?\në‹¤ì‹œ ë˜ëŒë¦´ ìˆ˜ ì—†ìŠµë‹ˆë‹¤!", 
+                "ë­í‚¹ ì§€ìš°ê¸°", 
                 JOptionPane.YES_NO_OPTION,
                 JOptionPane.WARNING_MESSAGE
             );
@@ -76,7 +76,7 @@ public class RankingPanel extends JPanel {
             if (confirm == JOptionPane.YES_OPTION) {
                 scoreManager.clearScores();
                 updateScores();
-                JOptionPane.showMessageDialog(this, "All rankings cleared!", "Success", 
+                JOptionPane.showMessageDialog(this, "ëª¨ë“  ë­í‚¹ì´ ì§€ì›Œì¡ŒìŠµë‹ˆë‹¤!", "Success", 
                                             JOptionPane.INFORMATION_MESSAGE);
             }
         });
@@ -90,7 +90,7 @@ public class RankingPanel extends JPanel {
             }
         });
         
-        JButton mainMenuButton = new JButton("Main Menu");
+        JButton mainMenuButton = new JButton("ë©”ì¸ ë©”ë‰´");
         mainMenuButton.setFont(new Font("Arial", Font.BOLD, 16));
         mainMenuButton.setBackground(new Color(51, 51, 51));
         mainMenuButton.setForeground(Color.WHITE);
@@ -127,7 +127,7 @@ public class RankingPanel extends JPanel {
         for (GameDifficulty difficulty : GameDifficulty.values()) {
             JPanel scorePanel = createScoresPanel();
             
-            // ÆĞ³ÎÀ» ¸Ê¿¡ ÀúÀå
+            // ï¿½Ğ³ï¿½ï¿½ï¿½ ï¿½Ê¿ï¿½ ï¿½ï¿½ï¿½ï¿½
             String key = mode.name() + "_" + difficulty.name();
             scorePanels.put(key, scorePanel);
             
@@ -150,7 +150,7 @@ public class RankingPanel extends JPanel {
     }
     
     public void updateScores() {
-        // Classic ModeÀÇ ¸ğµç ³­ÀÌµµ ¾÷µ¥ÀÌÆ®
+        // Classic Modeï¿½ï¿½ ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½Ìµï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Æ®
         for (GameDifficulty difficulty : GameDifficulty.values()) {
             String key = GameMode.CLASSIC.name() + "_" + difficulty.name();
             JPanel panel = scorePanels.get(key);
@@ -159,7 +159,7 @@ public class RankingPanel extends JPanel {
             }
         }
         
-        // Time Attack ModeÀÇ ¸ğµç ³­ÀÌµµ ¾÷µ¥ÀÌÆ®
+        // Time Attack Modeï¿½ï¿½ ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½Ìµï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Æ®
         for (GameDifficulty difficulty : GameDifficulty.values()) {
             String key = GameMode.TIME_ATTACK.name() + "_" + difficulty.name();
             JPanel panel = scorePanels.get(key);
@@ -193,7 +193,7 @@ public class RankingPanel extends JPanel {
                 ));
                 scorePanel.setMaximumSize(new Dimension(600, 65));
                 
-                // ¼øÀ§
+                // ï¿½ï¿½ï¿½ï¿½
                 JLabel rankLabel = new JLabel((i + 1) + ".");
                 rankLabel.setFont(new Font("Arial", Font.BOLD, 20));
                 if (i == 0) {

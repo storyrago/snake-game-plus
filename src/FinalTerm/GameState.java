@@ -33,8 +33,8 @@ public class GameState {
     private boolean hasHammer = false;
     
     private final String[] rouletteOptions = {
-        "SPEED UP! (BAD)", "SPEED DOWN (GOOD)", "X2 SCORE (GOOD)", 
-        "REVERSE (BAD)", "DARKNESS (BAD)", "SCISSORS (GOOD)"
+        "스피드 업", "스피드 다운!", "점수 2배!", 
+        "리버스", "시야 축소", "꼬리 자르기!"
     };
     
     public GameState() {

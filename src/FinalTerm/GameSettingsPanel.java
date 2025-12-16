@@ -21,28 +21,28 @@ public class GameSettingsPanel extends JPanel {
     }
     
     private void initComponents() {
-        // Å¸ÀÌÆ²
-        JLabel titleLabel = new JLabel("Game Settings", SwingConstants.CENTER);
+        // Å¸ï¿½ï¿½Æ²
+        JLabel titleLabel = new JLabel("ê²Œì„ ì„¤ì •", SwingConstants.CENTER);
         titleLabel.setFont(new Font("Arial", Font.BOLD, 40));
         titleLabel.setForeground(new Color(0, 255, 0));
         titleLabel.setBorder(BorderFactory.createEmptyBorder(40, 0, 30, 0));
         add(titleLabel, BorderLayout.NORTH);
         
-        // ¼³Á¤ ÆĞ³Î
+        // ï¿½ï¿½ï¿½ï¿½ ï¿½Ğ³ï¿½
         JPanel settingsPanel = new JPanel();
         settingsPanel.setLayout(new BoxLayout(settingsPanel, BoxLayout.Y_AXIS));
         settingsPanel.setBackground(new Color(26, 26, 26));
         settingsPanel.setBorder(BorderFactory.createEmptyBorder(20, 60, 20, 60));
         
-        // ³­ÀÌµµ ¼½¼Ç
-        addSectionTitle(settingsPanel, "Difficulty");
+        // ï¿½ï¿½ï¿½Ìµï¿½ ï¿½ï¿½ï¿½ï¿½
+        addSectionTitle(settingsPanel, "ë‚œì´ë„");
         JPanel difficultyPanel = new JPanel(new GridLayout(3, 1, 0, 10));
         difficultyPanel.setBackground(new Color(26, 26, 26));
         ButtonGroup difficultyGroup = new ButtonGroup();
         
-        easyButton = createRadioButton("Easy (Slow)");
-        normalButton = createRadioButton("Normal");
-        hardButton = createRadioButton("Hard (Fast)");
+        easyButton = createRadioButton("ì‰¬ì›€ (ëŠë¦¼)");
+        normalButton = createRadioButton("ë³´í†µ");
+        hardButton = createRadioButton("ì–´ë ¤ì›€ (ë¹ ë¦„)");
         
         difficultyGroup.add(easyButton);
         difficultyGroup.add(normalButton);
@@ -56,8 +56,8 @@ public class GameSettingsPanel extends JPanel {
         
         settingsPanel.add(difficultyPanel);
         
-        // ³­ÀÌµµ ¼³¸í ¶óº§ (ÃÊ±â¿¡´Â ¼û±è)
-        difficultyInfoLabel = new JLabel("<html><i>Easy: 90 seconds | Normal: 60 seconds | Hard: 30 seconds</i></html>");
+        // ï¿½ï¿½ï¿½Ìµï¿½ ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ (ï¿½Ê±â¿¡ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½)
+        difficultyInfoLabel = new JLabel("<html><i>ì‰¬ì›€: 90 ì´ˆ | ë³´í†µ: 60 ì´ˆ | ì–´ë ¤ì›€: 30 ì´ˆ</i></html>");
         difficultyInfoLabel.setFont(new Font("Arial", Font.PLAIN, 14));
         difficultyInfoLabel.setForeground(new Color(150, 150, 150));
         difficultyInfoLabel.setAlignmentX(Component.LEFT_ALIGNMENT);
@@ -67,14 +67,14 @@ public class GameSettingsPanel extends JPanel {
         
         settingsPanel.add(Box.createRigidArea(new Dimension(0, 30)));
         
-        // °ÔÀÓ ¸ğµå ¼½¼Ç
-        addSectionTitle(settingsPanel, "Game Mode");
+        // ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½
+        addSectionTitle(settingsPanel, "ê²Œì„ ëª¨ë“œ");
         JPanel modePanel = new JPanel(new GridLayout(2, 1, 0, 10));
         modePanel.setBackground(new Color(26, 26, 26));
         ButtonGroup modeGroup = new ButtonGroup();
         
-        classicButton = createRadioButton("Classic Mode");
-        timeAttackButton = createRadioButton("Time Attack Mode");
+        classicButton = createRadioButton("í´ë˜ì‹ ëª¨ë“œ");
+        timeAttackButton = createRadioButton("íƒ€ì„ ì–´íƒ ëª¨ë“œ");
         
         modeGroup.add(classicButton);
         modeGroup.add(timeAttackButton);
@@ -87,20 +87,20 @@ public class GameSettingsPanel extends JPanel {
         settingsPanel.add(modePanel);
         settingsPanel.add(Box.createRigidArea(new Dimension(0, 20)));
         
-        // ½Ã°£ Á¦ÇÑ ¼³Á¤
+        // ï¿½Ã°ï¿½ ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½
         JPanel timeLimitPanel = new JPanel(new FlowLayout(FlowLayout.LEFT));
         timeLimitPanel.setBackground(new Color(26, 26, 26));
         
-        timeLimitLabel = new JLabel("Time Limit: ");
+        timeLimitLabel = new JLabel("ì‹œê°„ ì œí•œ: ");
         timeLimitLabel.setFont(new Font("Arial", Font.PLAIN, 16));
         timeLimitLabel.setForeground(Color.LIGHT_GRAY);
         timeLimitLabel.setVisible(false);
         
-        String[] timeOptions = {"30 seconds", "60 seconds", "90 seconds"};
+        String[] timeOptions = {"30 ì´ˆ", "60 ì´ˆ", "90 ì´ˆ"};
         timeLimitComboBox = new JComboBox<>(timeOptions);
         timeLimitComboBox.setFont(new Font("Arial", Font.PLAIN, 16));
         timeLimitComboBox.setPreferredSize(new Dimension(140, 30));
-        timeLimitComboBox.setSelectedIndex(1); // ±âº»°ª: 60ÃÊ
+        timeLimitComboBox.setSelectedIndex(1); // ï¿½âº»ï¿½ï¿½: 60ï¿½ï¿½
         timeLimitComboBox.setVisible(false);
         
         timeLimitPanel.add(timeLimitLabel);
@@ -109,17 +109,17 @@ public class GameSettingsPanel extends JPanel {
         settingsPanel.add(timeLimitPanel);
         settingsPanel.add(Box.createRigidArea(new Dimension(0, 10)));
         
-        // ¸ğµåº° ¾È³» ¶óº§
-        JLabel modeInfoLabel = new JLabel("<html><i>* Classic: Difficulty affects speed<br>" +
-                                         "* Time Attack: Normal speed, difficulty by time limit</i></html>");
+        // ï¿½ï¿½åº° ï¿½È³ï¿½ ï¿½ï¿½
+        JLabel modeInfoLabel = new JLabel("<html><i>* í´ë˜ì‹: ë‚œì´ë„ì— ë”°ë¼ ì´ë™ì†ë„ê°€ ë³€ê²½ë©ë‹ˆë‹¤! <br>" +
+                                         "* íƒ€ì„ì–´íƒ: ê¸°ë³¸ ì†ë„ë¥¼ ê°€ì§€ëŠ” ëŒ€ì‹ , ì œí•œ ì‹œê°„ ë‚´ì— ë†’ì€ ì ìˆ˜ì— ë„ì „í•˜ì„¸ìš”!</i></html>");
         modeInfoLabel.setFont(new Font("Arial", Font.PLAIN, 12));
         modeInfoLabel.setForeground(Color.GRAY);
         modeInfoLabel.setAlignmentX(Component.LEFT_ALIGNMENT);
         settingsPanel.add(modeInfoLabel);
         
-        // ¸ğµå ¼±ÅÃ ÀÌº¥Æ®
+        // ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ ï¿½Ìºï¿½Æ®
         timeAttackButton.addActionListener(e -> {
-            // ½Ã°£ Á¦ÇÑ ¸ğµå
+            // ï¿½Ã°ï¿½ ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½
             easyButton.setEnabled(false);
             normalButton.setEnabled(false);
             hardButton.setEnabled(false);
@@ -130,7 +130,7 @@ public class GameSettingsPanel extends JPanel {
         });
         
         classicButton.addActionListener(e -> {
-            // Å¬·¡½Ä ¸ğµå
+            // Å¬ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½
             easyButton.setEnabled(true);
             normalButton.setEnabled(true);
             hardButton.setEnabled(true);
@@ -145,12 +145,12 @@ public class GameSettingsPanel extends JPanel {
         scrollPane.setBorder(null);
         add(scrollPane, BorderLayout.CENTER);
         
-        // ¹öÆ° ÆĞ³Î
+        // ï¿½ï¿½Æ° ï¿½Ğ³ï¿½
         JPanel buttonPanel = new JPanel(new FlowLayout(FlowLayout.CENTER, 20, 0));
         buttonPanel.setBackground(new Color(26, 26, 26));
         buttonPanel.setBorder(BorderFactory.createEmptyBorder(20, 0, 30, 0));
         
-        JButton startButton = new JButton("Start Game");
+        JButton startButton = new JButton("ê²Œì„ ì‹œì‘");
         startButton.setFont(new Font("Arial", Font.BOLD, 20));
         startButton.setBackground(new Color(0, 255, 0));
         startButton.setForeground(Color.BLACK);
@@ -162,7 +162,7 @@ public class GameSettingsPanel extends JPanel {
             controller.showScreen(GameScreen.PLAYING);
         });
         
-        JButton backButton = new JButton("Back");
+        JButton backButton = new JButton("ë’¤ë¡œ");
         backButton.setFont(new Font("Arial", Font.BOLD, 20));
         backButton.setBackground(new Color(51, 51, 51));
         backButton.setForeground(Color.WHITE);
@@ -197,11 +197,11 @@ public class GameSettingsPanel extends JPanel {
     }
     
     private void applySettings() {
-        // ¸ğµå Àû¿ë
+        // ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½
         if (classicButton.isSelected()) {
             GameSettings.setMode(GameMode.CLASSIC);
             
-            // Å¬·¡½Ä ¸ğµå: ³­ÀÌµµ Àû¿ë
+            // Å¬ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½: ï¿½ï¿½ï¿½Ìµï¿½ ï¿½ï¿½ï¿½ï¿½
             if (easyButton.isSelected()) {
                 GameSettings.setDifficulty(GameDifficulty.EASY);
             } else if (normalButton.isSelected()) {
@@ -212,24 +212,24 @@ public class GameSettingsPanel extends JPanel {
         } else if (timeAttackButton.isSelected()) {
             GameSettings.setMode(GameMode.TIME_ATTACK);
             
-            // ½Ã°£ Á¦ÇÑ ¸ğµå: ¼Óµµ´Â Ç×»ó Normal·Î °íÁ¤
+            // ï¿½Ã°ï¿½ ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½: ï¿½Óµï¿½ï¿½ï¿½ ï¿½×»ï¿½ Normalï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½
             GameSettings.setDifficulty(GameDifficulty.NORMAL);
             
-            // ¼±ÅÃµÈ ½Ã°£¿¡ µû¶ó Ç¥½Ã¿ë ³­ÀÌµµ ¼³Á¤
+            // ï¿½ï¿½ï¿½Ãµï¿½ ï¿½Ã°ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ Ç¥ï¿½Ã¿ï¿½ ï¿½ï¿½ï¿½Ìµï¿½ ï¿½ï¿½ï¿½ï¿½
             int selectedIndex = timeLimitComboBox.getSelectedIndex();
             int timeLimit;
             GameDifficulty displayDiff;
             
             switch (selectedIndex) {
-                case 0: // 30ÃÊ
+                case 0: // 30ï¿½ï¿½
                     timeLimit = 30;
                     displayDiff = GameDifficulty.HARD;
                     break;
-                case 1: // 60ÃÊ
+                case 1: // 60ï¿½ï¿½
                     timeLimit = 60;
                     displayDiff = GameDifficulty.NORMAL;
                     break;
-                case 2: // 90ÃÊ
+                case 2: // 90ï¿½ï¿½
                     timeLimit = 90;
                     displayDiff = GameDifficulty.EASY;
                     break;
@@ -243,7 +243,7 @@ public class GameSettingsPanel extends JPanel {
             return;
         }
         
-        // Å¬·¡½Ä ¸ğµåÀÇ ±âº» ½Ã°£ Á¦ÇÑ (»ç¿ëµÇÁö ¾ÊÀ½)
+        // Å¬ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½ ï¿½âº» ï¿½Ã°ï¿½ ï¿½ï¿½ï¿½ï¿½ (ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½)
         GameSettings.setTimeLimit(0);
     }
 }

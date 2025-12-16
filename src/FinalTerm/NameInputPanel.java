@@ -2,7 +2,6 @@ package FinalTerm;
 
 import javax.swing.*;
 import java.awt.*;
-import java.awt.event.*;
 
 public class NameInputPanel extends GradientPanel {
     private SnakeGameController controller;
@@ -12,7 +11,6 @@ public class NameInputPanel extends GradientPanel {
         super(new Color(15, 15, 35), new Color(35, 35, 55), true);
         this.controller = controller;
         setLayout(new BorderLayout());
-        
         initComponents();
     }
     
@@ -22,19 +20,17 @@ public class NameInputPanel extends GradientPanel {
         centerPanel.setLayout(new BoxLayout(centerPanel, BoxLayout.Y_AXIS));
         centerPanel.setBorder(BorderFactory.createEmptyBorder(120, 80, 120, 80));
         
-        // Icon Label
         JLabel iconLabel = new JLabel("SNAKE", SwingConstants.CENTER);
         iconLabel.setFont(new Font("Arial", Font.BOLD, 48));
         iconLabel.setForeground(new Color(0, 255, 0));
         iconLabel.setAlignmentX(Component.CENTER_ALIGNMENT);
         
-        // Instruction Label
-        JLabel instructionLabel = new JLabel("Enter your name");
-        instructionLabel.setFont(new Font("Arial", Font.BOLD, 32));
+        // [한글화]
+        JLabel instructionLabel = new JLabel("이름을 입력하세요");
+        instructionLabel.setFont(new Font("Malgun Gothic", Font.BOLD, 32));
         instructionLabel.setForeground(Color.WHITE);
         instructionLabel.setAlignmentX(Component.CENTER_ALIGNMENT);
         
-        // Name Field
         nameField = new JTextField(PlayerData.getPlayerName());
         nameField.setFont(new Font("Arial", Font.PLAIN, 24));
         nameField.setMaximumSize(new Dimension(380, 55));
@@ -48,9 +44,9 @@ public class NameInputPanel extends GradientPanel {
             BorderFactory.createEmptyBorder(10, 15, 10, 15)
         ));
         
-        // Start Button
-        JButton startButton = new JButton("START GAME");
-        startButton.setFont(new Font("Arial", Font.BOLD, 22));
+        // [한글화]
+        JButton startButton = new JButton("게임 시작");
+        startButton.setFont(new Font("Malgun Gothic", Font.BOLD, 22));
         startButton.setBackground(new Color(0, 180, 0));
         startButton.setForeground(Color.WHITE);
         startButton.setFocusPainted(false);
@@ -62,12 +58,16 @@ public class NameInputPanel extends GradientPanel {
         startButton.setMaximumSize(new Dimension(250, 55));
         startButton.setCursor(new Cursor(Cursor.HAND_CURSOR));
         
-        startButton.addActionListener(e -> startGame());
-        nameField.addActionListener(e -> startGame());
+        startButton.addActionListener(e -> {
+            controller.getSoundManager().playClip("click");
+            startGame();
+        });
+        nameField.addActionListener(e -> {
+            controller.getSoundManager().playClip("click");
+            startGame();
+        });
         
-        UIAnimationHelper.addHoverEffect(startButton, 
-            new Color(0, 180, 0), new Color(0, 255, 0), 
-            Color.WHITE, Color.BLACK);
+        UIAnimationHelper.addHoverEffect(startButton, new Color(0, 180, 0), new Color(0, 255, 0), Color.WHITE, Color.BLACK);
         
         centerPanel.add(iconLabel);
         centerPanel.add(Box.createRigidArea(new Dimension(0, 30)));
@@ -79,7 +79,6 @@ public class NameInputPanel extends GradientPanel {
         
         add(centerPanel, BorderLayout.CENTER);
         
-        // Back Button
         JButton backButton = createBackButton();
         JPanel bottomPanel = new JPanel(new FlowLayout(FlowLayout.LEFT));
         bottomPanel.setOpaque(false);
@@ -112,24 +111,25 @@ public class NameInputPanel extends GradientPanel {
                 timer.stop();
             }
         });
-        
         timer.start();
     }
     
     private JButton createBackButton() {
-        JButton button = new JButton("< Back");
-        button.setFont(new Font("Arial", Font.PLAIN, 16));
+        // [한글화]
+        JButton button = new JButton("< 뒤로");
+        button.setFont(new Font("Malgun Gothic", Font.PLAIN, 16));
         button.setBackground(new Color(60, 60, 80));
         button.setForeground(Color.WHITE);
         button.setFocusPainted(false);
         button.setBorderPainted(false);
         button.setCursor(new Cursor(Cursor.HAND_CURSOR));
-        button.addActionListener(e -> controller.showScreen(GameScreen.MAIN_MENU));
         
-        UIAnimationHelper.addHoverEffect(button, 
-            new Color(60, 60, 80), new Color(100, 100, 120), 
-            Color.WHITE, new Color(0, 255, 0));
+        button.addActionListener(e -> {
+            controller.getSoundManager().playClip("click");
+            controller.showScreen(GameScreen.MAIN_MENU);
+        });
         
+        UIAnimationHelper.addHoverEffect(button, new Color(60, 60, 80), new Color(100, 100, 120), Color.WHITE, new Color(0, 255, 0));
         return button;
     }
     

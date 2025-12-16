@@ -11,11 +11,6 @@ public class ImageManager {
 
     public ImageManager() {
         images = new HashMap<>();
-        
-        // 뱀 (사용 안 함)
-        loadImage("head", "head.png");
-        loadImage("body", "body.png");
-        loadImage("tail", "tail.png");
 
         // 먹이
         loadImage("food_normal", "apple.png");
