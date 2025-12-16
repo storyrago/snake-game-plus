@@ -124,7 +124,8 @@ public class GameState {
         Food food = board.getFood();
         if (food != null && food.getPosition().equals(newHead)) {
             long currentTime = System.currentTimeMillis();
-            if (currentTime - lastEatTime < 2000) currentCombo++;
+            // [수정] 콤보 유지 시간 2000 -> 4000 (4초)
+            if (currentTime - lastEatTime < 4000) currentCombo++;
             else currentCombo = 0;
             if (currentCombo > maxCombo) maxCombo = currentCombo;
             lastEatTime = currentTime;
@@ -143,7 +144,8 @@ public class GameState {
             if (rnd.nextInt(100) < 15) board.spawnObstacle(snake.getBody());
             if (rnd.nextInt(100) < 10) board.spawnHammer(snake.getBody());
             
-            result = new UpdateResult(UpdateResult.Type.FOOD_EATEN, newHead, currentCombo);
+            String foodMsg = "rare".equals(food.getType()) ? "Rare" : "Normal";
+            result = new UpdateResult(UpdateResult.Type.FOOD_EATEN, newHead, currentCombo, foodMsg);
         }
         
         Portal enteredPortal = board.checkPortal(newHead);
@@ -247,7 +249,16 @@ public class GameState {
     public int getFoodEaten() { return foodEaten; }
     public int getItemsCollected() { return itemsCollected; }
     public int getCombo() {
-         if (System.currentTimeMillis() - lastEatTime >= 2000) return 0;
+         // [수정] 콤보 확인 로직 2000 -> 4000 (4초)
+         if (System.currentTimeMillis() - lastEatTime >= 4000) return 0;
          return currentCombo;
+    }
+    
+    // [수정] 남은 시간 계산 로직 2000 -> 4000 (4초)
+    public long getComboRemainingTime() {
+        if (currentCombo == 0) return 0;
+        long elapsed = System.currentTimeMillis() - lastEatTime;
+        long remaining = 4000 - elapsed;
+        return remaining > 0 ? remaining : 0;
     }
 }

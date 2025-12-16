@@ -269,14 +269,38 @@ public class GameRenderer {
             nextInfoX += 110; 
         }
         
+        // [수정] 해머가 있으면 그리고, nextInfoX를 증가시켜 콤보와 겹치지 않게 함
         if (gameState.hasHammer()) {
             g2d.setColor(new Color(255, 140, 0));
             g2d.drawString("[해머 장착!]", nextInfoX, y);
             g2d.setColor(Color.WHITE);
-        } else if (gameState.getCombo() > 0) {
+            
+            nextInfoX += 110; // 해머 텍스트 길이만큼 공간 확보
+        }
+        
+        // [수정] else if -> if 로 변경하여 해머와 콤보가 동시에 뜰 수 있게 함
+        if (gameState.getCombo() > 0) {
             g2d.setColor(Color.YELLOW);
             g2d.drawString("Combo: x" + gameState.getCombo(), nextInfoX, y);
-            g2d.setColor(Color.WHITE);
+            
+            // 콤보 게이지 바 그리기
+            long timeLeft = gameState.getComboRemainingTime();
+            float ratio = Math.max(0, (float) timeLeft / 4000.0f);
+            
+            int barWidth = 100; // 바 너비
+            int barHeight = 6;  // 바 높이
+            int barX = nextInfoX;
+            int barY = y + 6;   // 텍스트 아래 위치
+            
+            // 바 배경 (어두운 노란색)
+            g2d.setColor(new Color(100, 100, 0));
+            g2d.fillRect(barX, barY, barWidth, barHeight);
+            
+            // 바 채우기 (밝은 노란색)
+            g2d.setColor(Color.YELLOW);
+            g2d.fillRect(barX, barY, (int)(barWidth * ratio), barHeight);
+            
+            g2d.setColor(Color.WHITE); // 색상 초기화
         }
         
         String status = "";
@@ -317,12 +341,10 @@ public class GameRenderer {
         List<ScoreManager.ScoreRecord> highScores = scoreManager.getHighScores(
             GameSettings.getMode(), GameSettings.getDisplayDifficulty());
         if (!highScores.isEmpty()) {
-            // [수정] Arial -> Malgun Gothic으로 변경하여 한글 깨짐 방지
             g2d.setFont(new Font("Malgun Gothic", Font.BOLD, 18));
             g2d.setColor(Color.YELLOW);
             g2d.drawString("Top 5", 50, lineY + 140);
             
-            // [수정] Arial -> Malgun Gothic으로 변경하여 한글 이름 출력 지원
             g2d.setFont(new Font("Malgun Gothic", Font.PLAIN, 14));
             g2d.setColor(Color.WHITE);
             for (int i = 0; i < Math.min(5, highScores.size()); i++) {
