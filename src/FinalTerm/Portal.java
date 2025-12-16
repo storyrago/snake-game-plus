@@ -1,7 +1,5 @@
 package FinalTerm;
 
-//Portal.java
-
 import java.awt.Point;
 
 public class Portal {

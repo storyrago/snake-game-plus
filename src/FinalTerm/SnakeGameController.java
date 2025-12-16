@@ -1,3 +1,4 @@
+// SnakeGameController.java
 package FinalTerm;
 
 import javax.swing.*;
@@ -21,7 +22,6 @@ public class SnakeGameController {
     private ThemeSelectPanel themeSelectPanel;
     
     public SnakeGameController() {
-        // 매니저 초기화
         themeManager = new ThemeManager();
         soundManager = new SoundManager();
         scoreManager = new ScoreManager();
@@ -77,8 +77,16 @@ public class SnakeGameController {
         cardLayout.show(mainPanel, screen.name());
         frame.pack();
         
-        // 배경음악 유지
-        soundManager.loopClip("bgm");
+        //화면에 따른 배경음악 교체 로직
+        if (screen == GameScreen.PLAYING) {
+            // 게임 화면으로 진입 시: 메인 BGM 끄고 게임 BGM 재생
+            soundManager.stopClip("bgm");
+            soundManager.loopClip("game_bgm");
+        } else {
+            // 그 외 화면(메뉴, 랭킹 등) 진입 시: 게임 BGM 끄고 메인 BGM 재생
+            soundManager.stopClip("game_bgm");
+            soundManager.loopClip("bgm");
+        }
         
         // 화면별 로직
         switch (screen) {

@@ -1,3 +1,4 @@
+// SoundManager.java
 package FinalTerm;
 
 import javax.sound.sampled.*;
@@ -8,17 +9,20 @@ import java.util.Map;
 public class SoundManager {
     private boolean enabled;
     private Map<String, Clip> audioClips;
+    
+    //현재 재생되어야 할 배경음악 키를 저장
+    private String currentBgmKey;
 
     public SoundManager() {
         this.enabled = true;
         this.audioClips = new HashMap<>();
         
-        // WAV 파일 로드 (배경음악, 효과음)
         loadAudio("click", "click.wav");
         loadAudio("gameover", "gameover.wav");
         loadAudio("roulette", "spinningwheel.wav");
         loadAudio("break", "breakrock.wav");
         loadAudio("bgm", "mainmenubackground.wav");
+        loadAudio("game_bgm", "gamebackground.wav");
     }
 
     private void loadAudio(String key, String filename) {
@@ -31,7 +35,7 @@ public class SoundManager {
                 
                 if (clip.isControlSupported(FloatControl.Type.MASTER_GAIN)) {
                     FloatControl gainControl = (FloatControl) clip.getControl(FloatControl.Type.MASTER_GAIN);
-                    if (key.equals("bgm")) {
+                    if (key.equals("bgm") || key.equals("game_bgm")) {
                         gainControl.setValue(-20.0f); // 배경음악 은은하게
                     } else {
                         gainControl.setValue(0.0f);
@@ -44,7 +48,6 @@ public class SoundManager {
         }
     }
 
-    // [추가] 비프음 재생 (먹이, 포탈, 해머용)
     public void playSound(int frequency, int duration) {
         if (!enabled) return;
         
@@ -90,6 +93,9 @@ public class SoundManager {
     }
     
     public void loopClip(String key) {
+        //어떤 음악이 재생되어야 하는지 항상 기억
+        currentBgmKey = key;
+        
         if (!enabled || !audioClips.containsKey(key)) return;
         try {
             Clip clip = audioClips.get(key);
@@ -108,9 +114,17 @@ public class SoundManager {
 
     public void toggle() {
         enabled = !enabled;
+        
         if (!enabled) {
+            // 소리 끄기: 모든 클립 중지
             for (Clip clip : audioClips.values()) {
                 if (clip.isRunning()) clip.stop();
+            }
+        } else {
+            //소리 켜기: 배경음악이 설정되어 있었다면 다시 재생
+            if (currentBgmKey != null) {
+                // loopClip을 호출하여 enabled 상태 체크 후 재생 시작
+                loopClip(currentBgmKey);
             }
         }
     }

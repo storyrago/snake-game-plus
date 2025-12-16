@@ -17,7 +17,6 @@ public class ThemeSelectPanel extends JPanel {
     
     private void initComponents() {
         JLabel titleLabel = new JLabel("스킨 / 테마", SwingConstants.CENTER);
-        // [폰트 수정] Malgun Gothic
         titleLabel.setFont(new Font("Malgun Gothic", Font.BOLD, 40));
         titleLabel.setForeground(new Color(0, 255, 0));
         titleLabel.setBorder(BorderFactory.createEmptyBorder(50, 0, 30, 0));
@@ -35,7 +34,6 @@ public class ThemeSelectPanel extends JPanel {
         add(themesPanel, BorderLayout.CENTER);
         
         JButton mainMenuButton = new JButton("메인 메뉴");
-        // [폰트 수정] Malgun Gothic
         mainMenuButton.setFont(new Font("Malgun Gothic", Font.BOLD, 20));
         mainMenuButton.setBackground(new Color(51, 51, 51));
         mainMenuButton.setForeground(Color.WHITE);
@@ -52,7 +50,6 @@ public class ThemeSelectPanel extends JPanel {
     
     private JButton createThemeButton(String name, Color color, String key) {
         JButton button = new JButton(name);
-        // [폰트 수정] Malgun Gothic
         button.setFont(new Font("Malgun Gothic", Font.BOLD, 28));
         button.setBackground(new Color(51, 51, 51));
         button.setForeground(color);

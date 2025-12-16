@@ -33,6 +33,9 @@ public class SnakeGame extends JPanel implements ActionListener {
     private int screenWidth;
     private int screenHeight;
     
+    //시간 측정을 위한 변수
+    private long lastTimeCheck;
+    
     public SnakeGame(SnakeGameController controller, ThemeManager themeManager, 
                      SoundManager soundManager, ScoreManager scoreManager) {
         this.controller = controller;
@@ -62,7 +65,6 @@ public class SnakeGame extends JPanel implements ActionListener {
     }
     
     private void initGameOverButtons() {
-        // [폰트 수정] Malgun Gothic
         restartButton = createStyledButton("다시 하기 (Enter)", new Color(0, 200, 0));
         restartButton.setBounds(screenWidth / 2 - 160, screenHeight - 80, 150, 45);
         restartButton.addActionListener(e -> { 
@@ -72,7 +74,6 @@ public class SnakeGame extends JPanel implements ActionListener {
         });
         add(restartButton);
         
-        // [폰트 수정] Malgun Gothic
         menuButton = createStyledButton("메인 메뉴", new Color(200, 50, 50));
         menuButton.setBounds(screenWidth / 2 + 10, screenHeight - 80, 150, 45);
         menuButton.addActionListener(e -> { 
@@ -85,7 +86,6 @@ public class SnakeGame extends JPanel implements ActionListener {
     
     private JButton createStyledButton(String text, Color baseColor) {
         JButton button = new JButton(text);
-        // [폰트 수정] Malgun Gothic
         button.setFont(new Font("Malgun Gothic", Font.BOLD, 14));
         button.setBackground(baseColor);
         button.setForeground(Color.WHITE);
@@ -119,6 +119,9 @@ public class SnakeGame extends JPanel implements ActionListener {
         delay = baseDelay;
         running = true;
         showResults = false;
+        
+        lastTimeCheck = System.currentTimeMillis();
+        
         gameTimer.setDelay(delay);
         gameTimer.start();
         renderTimer.start();
@@ -131,6 +134,13 @@ public class SnakeGame extends JPanel implements ActionListener {
     }
 
     private void update() {
+        //1초마다 실제 경과 시간을 확인하여 플레이 타임 증가
+        long currentTime = System.currentTimeMillis();
+        if (currentTime - lastTimeCheck >= 1000) {
+            gameState.incrementPlayTime();
+            lastTimeCheck = currentTime;
+        }
+
         if (GameSettings.getMode() == GameMode.TIME_ATTACK && gameState.isTimeUp(GameSettings.getTimeLimit())) {
             gameOver(); return;
         }

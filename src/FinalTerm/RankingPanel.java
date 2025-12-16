@@ -24,14 +24,12 @@ public class RankingPanel extends JPanel {
     
     private void initComponents() {
         JLabel titleLabel = new JLabel("랭킹", SwingConstants.CENTER);
-        // [폰트 수정] Malgun Gothic
         titleLabel.setFont(new Font("Malgun Gothic", Font.BOLD, 40));
         titleLabel.setForeground(new Color(255, 215, 0));
         titleLabel.setBorder(BorderFactory.createEmptyBorder(30, 0, 20, 0));
         add(titleLabel, BorderLayout.NORTH);
         
         modeTabbedPane = new JTabbedPane();
-        // [폰트 수정] Malgun Gothic (탭 메뉴)
         modeTabbedPane.setFont(new Font("Malgun Gothic", Font.BOLD, 16));
         modeTabbedPane.setBackground(new Color(26, 26, 26));
         modeTabbedPane.setForeground(Color.WHITE);
@@ -46,7 +44,6 @@ public class RankingPanel extends JPanel {
         bottomPanel.setBorder(BorderFactory.createEmptyBorder(20, 0, 20, 0));
         
         JButton clearButton = new JButton("랭킹 기록 지우기");
-        // [폰트 수정] Malgun Gothic
         clearButton.setFont(new Font("Malgun Gothic", Font.BOLD, 16));
         clearButton.setBackground(new Color(220, 53, 69));
         clearButton.setForeground(Color.WHITE);
@@ -59,7 +56,6 @@ public class RankingPanel extends JPanel {
         });
         
         JButton mainMenuButton = new JButton("메인 메뉴");
-        // [폰트 수정] Malgun Gothic
         mainMenuButton.setFont(new Font("Malgun Gothic", Font.BOLD, 16));
         mainMenuButton.setBackground(new Color(51, 51, 51));
         mainMenuButton.setForeground(Color.WHITE);
@@ -74,7 +70,6 @@ public class RankingPanel extends JPanel {
     
     private JTabbedPane createDifficultyTabs(GameMode mode) {
         JTabbedPane difficultyTabs = new JTabbedPane();
-        // [폰트 수정] Malgun Gothic
         difficultyTabs.setFont(new Font("Malgun Gothic", Font.PLAIN, 14));
         difficultyTabs.setBackground(new Color(26, 26, 26));
         
@@ -110,7 +105,6 @@ public class RankingPanel extends JPanel {
         
         if (scores.isEmpty()) {
             JLabel label = new JLabel("기록이 없습니다.");
-            // [폰트 수정] Malgun Gothic
             label.setFont(new Font("Malgun Gothic", Font.PLAIN, 18));
             label.setForeground(Color.GRAY);
             label.setAlignmentX(Component.CENTER_ALIGNMENT);
@@ -127,7 +121,6 @@ public class RankingPanel extends JPanel {
                 rank.setFont(new Font("Arial", Font.BOLD, 20));
                 rank.setForeground(i == 0 ? Color.YELLOW : Color.WHITE);
                 
-                // [폰트 수정] Malgun Gothic (플레이어 이름)
                 JLabel name = new JLabel(r.playerName);
                 name.setFont(new Font("Malgun Gothic", Font.BOLD, 18));
                 name.setForeground(Color.WHITE);

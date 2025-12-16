@@ -1,7 +1,5 @@
 package FinalTerm;
 
-//Snake.java - �� ��ƼƼ ����
-
 import java.awt.Point;
 import java.util.*;
 
@@ -17,7 +15,6 @@ public class Snake {
         directionQueue = new LinkedList<>();
     }
     
-    // ���� �Ӹ� ��ġ�� ��� (������ �̵����� ����)
     public Point getNextHeadPosition() {
         Point currentDirection = direction;
         if (!directionQueue.isEmpty()) {
@@ -31,7 +28,6 @@ public class Snake {
         );
     }
     
-    // ���� �̵� ����
     public void moveTo(Point newHead) {
         if (!directionQueue.isEmpty()) {
             direction = directionQueue.poll();
@@ -63,7 +59,6 @@ public class Snake {
         body = new ArrayList<>(body.subList(0, newSize));
     }
     
-    // �Ӹ��� �߰��Ǳ� ���� üũ�ؾ� ��
     public boolean checkSelfCollision(Point head) {
         for (int i = 0; i < body.size(); i++) {
             if (body.get(i).equals(head)) {
@@ -81,7 +76,6 @@ public class Snake {
         Point currentDir = directionQueue.isEmpty() ? direction : 
                           directionQueue.toArray(new Point[0])[directionQueue.size() - 1];
         
-        // �ݴ� ���� üũ
         if (newDir.x == -currentDir.x && newDir.y == -currentDir.y) return false;
         if (newDir.x == currentDir.x && newDir.y == currentDir.y) return false;
         

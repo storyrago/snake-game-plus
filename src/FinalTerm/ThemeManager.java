@@ -1,7 +1,5 @@
 package FinalTerm;
 
-//ThemeManager.java - Å×¸¶ °ü¸®
-
 import java.awt.Color;
 import java.util.*;
 
@@ -45,8 +43,17 @@ public class ThemeManager {
     }
     
     public void cycleTheme() {
-        int currentIndex = Arrays.asList(themeNames).indexOf(currentTheme);
-        currentTheme = themeNames[(currentIndex + 1) % themeNames.length];
+        int currentIndex = 0;
+        for (int i = 0; i < themeNames.length; i++) {
+            if (themeNames[i].equals(currentTheme)) {
+                currentIndex = i;
+                break;
+            }
+        }
+        
+        // ë‹¤ìŒ í…Œë§ˆë¡œ ë³€ê²½
+        int nextIndex = (currentIndex + 1) % themeNames.length;
+        currentTheme = themeNames[nextIndex];
     }
     
     public void setTheme(String themeName) {

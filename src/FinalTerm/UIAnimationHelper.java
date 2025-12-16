@@ -6,7 +6,6 @@ import java.awt.event.*;
 
 public class UIAnimationHelper {
     
-    // 버튼 호버 애니메이션
     public static void addHoverEffect(JButton button, Color normalBg, Color hoverBg, Color normalFg, Color hoverFg) {
         button.addMouseListener(new MouseAdapter() {
             Timer timer;
@@ -60,7 +59,6 @@ public class UIAnimationHelper {
         });
     }
     
-    // 페이드 인 효과
     public static void fadeIn(JComponent component, int duration) {
         component.setOpaque(false);
         Timer timer = new Timer(20, null);
@@ -79,7 +77,6 @@ public class UIAnimationHelper {
         timer.start();
     }
     
-    // 스케일 애니메이션
     public static void scaleAnimation(JButton button) {
         button.addMouseListener(new MouseAdapter() {
             Timer timer;

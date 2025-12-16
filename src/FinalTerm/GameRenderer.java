@@ -13,7 +13,6 @@ public class GameRenderer {
     private static final int CELL_SIZE = 25;
     private ImageManager imageManager;
     
-    // [추가] 부유하는 텍스트 효과 관리 리스트
     private List<FloatingText> floatingTexts;
 
     public GameRenderer() {
@@ -21,7 +20,6 @@ public class GameRenderer {
         floatingTexts = new ArrayList<>();
     }
     
-    // [추가] 외부에서 호출하여 텍스트 효과 생성
     public void addFloatingScore(Point position, int score) {
         int pixelX = position.x * CELL_SIZE;
         int pixelY = position.y * CELL_SIZE;
@@ -47,7 +45,6 @@ public class GameRenderer {
         
         drawSnake(g2d, gameState.getSnake(), theme);
         
-        // [추가] 플로팅 텍스트 렌더링
         drawFloatingTexts(g2d);
         
         if (gameState.isReducedVisionActive()) {
@@ -70,7 +67,6 @@ public class GameRenderer {
         }
     }
     
-    // [추가] 텍스트 효과 그리기 및 상태 업데이트
     private void drawFloatingTexts(Graphics2D g2d) {
         if (floatingTexts.isEmpty()) return;
 
@@ -80,11 +76,9 @@ public class GameRenderer {
             
             g2d.setFont(new Font("Arial", Font.BOLD, 16));
             
-            // 그림자
             g2d.setColor(new Color(0, 0, 0, (int)(ft.alpha * 255)));
             g2d.drawString(ft.text, ft.x + 1, (int)ft.y + 1);
             
-            // 본문 (금색)
             g2d.setColor(new Color(255, 215, 0, (int)(ft.alpha * 255)));
             g2d.drawString(ft.text, ft.x, (int)ft.y);
             
@@ -260,21 +254,28 @@ public class GameRenderer {
         g2d.setColor(Color.WHITE);
         g2d.setFont(new Font("Malgun Gothic", Font.BOLD, 14));
         int y = gameAreaHeight + 25;
+        
         g2d.drawString("점수: " + gameState.getScore(), 10, y);
-        g2d.drawString("길이: " + gameState.getSnake().getLength(), 150, y);
+        g2d.drawString("길이: " + gameState.getSnake().getLength(), 140, y);
+        
+        int nextInfoX = 260;
+        
+        if (GameSettings.getMode() == GameMode.TIME_ATTACK) {
+            int remainingTime = gameState.getRemainingTime(GameSettings.getTimeLimit());
+            g2d.setColor(remainingTime <= 10 ? Color.RED : Color.CYAN);
+            g2d.drawString("시간: " + remainingTime + "초", nextInfoX, y);
+            g2d.setColor(Color.WHITE);
+            
+            nextInfoX += 110; 
+        }
         
         if (gameState.hasHammer()) {
             g2d.setColor(new Color(255, 140, 0));
-            g2d.drawString("[해머 장착..!!]", 280, y);
-            g2d.setColor(Color.WHITE);
-        } else if (GameSettings.getMode() == GameMode.TIME_ATTACK) {
-            int remainingTime = gameState.getRemainingTime(GameSettings.getTimeLimit());
-            g2d.setColor(remainingTime <= 10 ? Color.RED : Color.CYAN);
-            g2d.drawString("시간: " + remainingTime + "초", 280, y);
+            g2d.drawString("[해머 장착!]", nextInfoX, y);
             g2d.setColor(Color.WHITE);
         } else if (gameState.getCombo() > 0) {
             g2d.setColor(Color.YELLOW);
-            g2d.drawString("Combo: x" + gameState.getCombo(), 280, y);
+            g2d.drawString("Combo: x" + gameState.getCombo(), nextInfoX, y);
             g2d.setColor(Color.WHITE);
         }
         
@@ -303,9 +304,11 @@ public class GameRenderer {
         String text = "게임 오버";
         int x = (width - g2d.getFontMetrics().stringWidth(text)) / 2;
         g2d.drawString(text, x, 80);
-        g2d.setFont(new Font("Arial", Font.BOLD, 18));
+        
+        g2d.setFont(new Font("Malgun Gothic", Font.BOLD, 18));
         g2d.setColor(Color.YELLOW);
         g2d.drawString("플레이 기록", 50, 130);
+        
         g2d.setFont(new Font("Malgun Gothic", Font.PLAIN, 14));
         g2d.setColor(Color.WHITE);
         int lineY = 155;
@@ -314,10 +317,13 @@ public class GameRenderer {
         List<ScoreManager.ScoreRecord> highScores = scoreManager.getHighScores(
             GameSettings.getMode(), GameSettings.getDisplayDifficulty());
         if (!highScores.isEmpty()) {
-            g2d.setFont(new Font("Arial", Font.BOLD, 18));
+            // [수정] Arial -> Malgun Gothic으로 변경하여 한글 깨짐 방지
+            g2d.setFont(new Font("Malgun Gothic", Font.BOLD, 18));
             g2d.setColor(Color.YELLOW);
             g2d.drawString("Top 5", 50, lineY + 140);
-            g2d.setFont(new Font("Arial", Font.PLAIN, 14));
+            
+            // [수정] Arial -> Malgun Gothic으로 변경하여 한글 이름 출력 지원
+            g2d.setFont(new Font("Malgun Gothic", Font.PLAIN, 14));
             g2d.setColor(Color.WHITE);
             for (int i = 0; i < Math.min(5, highScores.size()); i++) {
                 ScoreManager.ScoreRecord record = highScores.get(i);
@@ -327,7 +333,6 @@ public class GameRenderer {
         }
     }
     
-    // [추가] 내부 클래스: 부유 텍스트
     private class FloatingText {
         int x;
         float y;

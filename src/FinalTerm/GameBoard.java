@@ -106,7 +106,6 @@ public class GameBoard {
                      && attempts < 100);
             
             if (attempts < 100) {
-                // [수정] "cyan" -> "blue"
                 portals[i] = new Portal(p.x, p.y, i == 0 ? "purple" : "blue");
             } else {
                 portals = null; return;

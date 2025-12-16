@@ -1,7 +1,5 @@
 package FinalTerm;
 
-//Food.java
-
 import java.awt.Point;
 
 public class Food {

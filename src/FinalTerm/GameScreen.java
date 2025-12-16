@@ -4,7 +4,7 @@ package FinalTerm;
 public enum GameScreen {
     MAIN_MENU,
     NAME_INPUT,
-    SETTINGS,      // Ãß°¡
+    SETTINGS,
     PLAYING,
     GAME_OVER,
     RANKING,

@@ -7,7 +7,7 @@ public class UpdateResult {
         NORMAL_MOVE,
         FOOD_EATEN,
         ITEM_COLLECTED,     // 랜덤박스 획득
-        HAMMER_COLLECTED,   // [추가] 해머 획득
+        HAMMER_COLLECTED,   // 해머 획득
         ROULETTE_FINISHED,  // 룰렛 종료
         OBSTACLE_DESTROYED, // 해머로 장애물 파괴
         PORTAL_USED,

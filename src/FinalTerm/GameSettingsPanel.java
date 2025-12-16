@@ -20,7 +20,6 @@ public class GameSettingsPanel extends GradientPanel {
         centerPanel.setBorder(BorderFactory.createEmptyBorder(50, 50, 50, 50));
         
         JLabel title = new JLabel("게임 설정");
-        // [폰트 수정] Malgun Gothic
         title.setFont(new Font("Malgun Gothic", Font.BOLD, 40));
         title.setForeground(Color.WHITE);
         title.setAlignmentX(Component.CENTER_ALIGNMENT);
@@ -37,7 +36,6 @@ public class GameSettingsPanel extends GradientPanel {
         centerPanel.add(Box.createRigidArea(new Dimension(0, 50)));
         
         JButton startBtn = new JButton("게임 시작!");
-        // [폰트 수정] Malgun Gothic
         startBtn.setFont(new Font("Malgun Gothic", Font.BOLD, 24));
         startBtn.setBackground(new Color(0, 200, 0));
         startBtn.setForeground(Color.WHITE);

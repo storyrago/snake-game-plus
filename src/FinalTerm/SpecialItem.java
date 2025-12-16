@@ -1,6 +1,5 @@
 package FinalTerm;
 
-//SpecialItem.java
 
 import java.awt.Point;
 

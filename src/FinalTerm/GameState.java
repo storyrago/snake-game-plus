@@ -164,7 +164,7 @@ public class GameState {
         isRouletteSpinning = true;
         rouletteEndTime = System.currentTimeMillis() + 3000;
         
-        // [중요] 룰렛 텍스트 변경 스레드 (게임 속도와 무관하게 80ms마다 변경)
+        //룰렛 텍스트 변경 스레드 (게임 속도와 무관하게 80ms마다 변경)
         new Thread(() -> {
             Random r = new Random();
             while (isRouletteSpinning && System.currentTimeMillis() < rouletteEndTime) {
@@ -218,7 +218,6 @@ public class GameState {
         }
     }
 
-    // Getters
     public boolean hasHammer() { return hasHammer; }
     
     public boolean isRouletteSpinning() { return isRouletteSpinning; }

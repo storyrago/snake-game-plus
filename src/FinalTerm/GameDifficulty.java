@@ -1,8 +1,7 @@
 package FinalTerm;
 
-
 public enum GameDifficulty {
-    EASY(200, 100, "Easy"),       // �ʱ� �ӵ�, �ּ� �ӵ�, �̸�
+    EASY(200, 100, "Easy"),
     NORMAL(150, 50, "Normal"),
     HARD(100, 30, "Hard");
     

@@ -1,6 +1,5 @@
 package FinalTerm;
 
-//InputHandler.java - 입력 처리
 
 import java.awt.Point;
 import java.awt.event.*;
@@ -16,7 +15,6 @@ public class InputHandler extends KeyAdapter {
     public void keyPressed(KeyEvent e) {
         int key = e.getKeyCode();
         
-        // 시스템 키
         if (key == KeyEvent.VK_R) {
             game.restart();
             return;
@@ -34,7 +32,6 @@ public class InputHandler extends KeyAdapter {
             return;
         }
         
-        // 방향 키
         Point newDir = null;
         switch (key) {
             case KeyEvent.VK_UP:

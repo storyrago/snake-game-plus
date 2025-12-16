@@ -27,13 +27,11 @@ public class NameInputPanel extends GradientPanel {
         iconLabel.setAlignmentX(Component.CENTER_ALIGNMENT);
         
         JLabel instructionLabel = new JLabel("이름을 입력하세요");
-        // [폰트 적용] Malgun Gothic
         instructionLabel.setFont(new Font("Malgun Gothic", Font.BOLD, 32));
         instructionLabel.setForeground(Color.WHITE);
         instructionLabel.setAlignmentX(Component.CENTER_ALIGNMENT);
         
         nameField = new JTextField(PlayerData.getPlayerName());
-        // [폰트 적용] Malgun Gothic (입력 텍스트)
         nameField.setFont(new Font("Malgun Gothic", Font.PLAIN, 24));
         nameField.setMaximumSize(new Dimension(380, 55));
         nameField.setHorizontalAlignment(JTextField.CENTER);
@@ -47,7 +45,6 @@ public class NameInputPanel extends GradientPanel {
         ));
         
         JButton startButton = new JButton("게임 시작");
-        // [폰트 적용] Malgun Gothic
         startButton.setFont(new Font("Malgun Gothic", Font.BOLD, 22));
         startButton.setBackground(new Color(0, 180, 0));
         startButton.setForeground(Color.WHITE);
@@ -120,7 +117,6 @@ public class NameInputPanel extends GradientPanel {
     
     private JButton createBackButton() {
         JButton button = new JButton("< 뒤로");
-        // [폰트 적용] Malgun Gothic
         button.setFont(new Font("Malgun Gothic", Font.PLAIN, 16));
         button.setBackground(new Color(60, 60, 80));
         button.setForeground(Color.WHITE);
@@ -137,7 +133,6 @@ public class NameInputPanel extends GradientPanel {
         return button;
     }
     
-    // [추가된 메서드] 이 부분이 없어서 오류가 났었습니다.
     public void focusNameField() {
         if (nameField != null) {
             nameField.requestFocusInWindow();

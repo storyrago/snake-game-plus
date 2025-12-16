@@ -27,7 +27,7 @@ public class ImageManager {
         loadImage("hammer", "hammer.png");
         loadImage("logo", "snakegame.png");
         
-        // [추가] 배경 이미지
+        //배경 이미지
         loadImage("background", "background.png");
     }
 

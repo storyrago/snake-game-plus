@@ -17,7 +17,6 @@ public class ScoreManager {
         String key = mode.name() + "_" + difficulty.name();
         List<ScoreRecord> list = scores.computeIfAbsent(key, k -> new ArrayList<>());
         
-        // [수정] 중복 이름 확인 및 최고 점수 갱신 로직
         ScoreRecord existingRecord = null;
         for (ScoreRecord record : list) {
             if (record.playerName.equals(playerName)) {
