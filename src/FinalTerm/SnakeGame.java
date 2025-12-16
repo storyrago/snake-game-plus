@@ -30,7 +30,6 @@ public class SnakeGame extends JPanel implements ActionListener {
     
     private String currentEffectMessage = "";
     private Timer effectMessageTimer;
-    
     private int screenWidth;
     private int screenHeight;
     
@@ -63,6 +62,7 @@ public class SnakeGame extends JPanel implements ActionListener {
     }
     
     private void initGameOverButtons() {
+        // [폰트 수정] Malgun Gothic
         restartButton = createStyledButton("다시 하기 (Enter)", new Color(0, 200, 0));
         restartButton.setBounds(screenWidth / 2 - 160, screenHeight - 80, 150, 45);
         restartButton.addActionListener(e -> { 
@@ -72,6 +72,7 @@ public class SnakeGame extends JPanel implements ActionListener {
         });
         add(restartButton);
         
+        // [폰트 수정] Malgun Gothic
         menuButton = createStyledButton("메인 메뉴", new Color(200, 50, 50));
         menuButton.setBounds(screenWidth / 2 + 10, screenHeight - 80, 150, 45);
         menuButton.addActionListener(e -> { 
@@ -84,6 +85,7 @@ public class SnakeGame extends JPanel implements ActionListener {
     
     private JButton createStyledButton(String text, Color baseColor) {
         JButton button = new JButton(text);
+        // [폰트 수정] Malgun Gothic
         button.setFont(new Font("Malgun Gothic", Font.BOLD, 14));
         button.setBackground(baseColor);
         button.setForeground(Color.WHITE);
@@ -104,9 +106,7 @@ public class SnakeGame extends JPanel implements ActionListener {
     }
     
     private void hideButtons() { 
-        if (buttonShowTimer != null && buttonShowTimer.isRunning()) {
-            buttonShowTimer.stop();
-        }
+        if (buttonShowTimer != null && buttonShowTimer.isRunning()) buttonShowTimer.stop();
         restartButton.setVisible(false); 
         menuButton.setVisible(false); 
     }
@@ -114,31 +114,26 @@ public class SnakeGame extends JPanel implements ActionListener {
     public void startNewGame() {
         hideButtons();
         gameState.reset();
-        
         GameDifficulty difficulty = GameSettings.getDifficulty();
         baseDelay = difficulty.getInitialDelay();
         delay = baseDelay;
-        
         running = true;
         showResults = false;
-        
         gameTimer.setDelay(delay);
         gameTimer.start();
         renderTimer.start();
-        
         repaint();
     }
 
     @Override
     public void actionPerformed(ActionEvent e) {
-        if (running) { update(); }
+        if (running) update();
     }
 
     private void update() {
         if (GameSettings.getMode() == GameMode.TIME_ATTACK && gameState.isTimeUp(GameSettings.getTimeLimit())) {
             gameOver(); return;
         }
-        
         UpdateResult result = gameState.update(null);
         updateGameSpeed();
         handleUpdateResult(result);
@@ -162,12 +157,9 @@ public class SnakeGame extends JPanel implements ActionListener {
     }
 
     private void handleUpdateResult(UpdateResult result) {
-        if (result.getType() == UpdateResult.Type.ITEM_COLLECTED) {
-             soundManager.loopClip("roulette");
-        } else if (result.getType() == UpdateResult.Type.ROULETTE_FINISHED) {
-             if (rouletteSoundStopTimer != null && rouletteSoundStopTimer.isRunning()) {
-                 rouletteSoundStopTimer.stop();
-             }
+        if (result.getType() == UpdateResult.Type.ITEM_COLLECTED) soundManager.loopClip("roulette");
+        else if (result.getType() == UpdateResult.Type.ROULETTE_FINISHED) {
+             if (rouletteSoundStopTimer != null && rouletteSoundStopTimer.isRunning()) rouletteSoundStopTimer.stop();
              rouletteSoundStopTimer = new Timer(1000, e -> soundManager.stopClip("roulette"));
              rouletteSoundStopTimer.setRepeats(false);
              rouletteSoundStopTimer.start();
@@ -183,12 +175,10 @@ public class SnakeGame extends JPanel implements ActionListener {
         switch (result.getType()) {
             case FOOD_EATEN: 
                 soundManager.playSound(523 + (result.getCombo() * 50), 100);
-                
-                // [수정] 플로팅 점수 효과 추가
+                // 점수 계산
                 int earnedScore = (result.getMessage() != null && result.getMessage().contains("Rare") ? 30 : 10) + (result.getCombo() * 5);
                 if (gameState.isDoubleScoreActive()) earnedScore *= 2;
                 renderer.addFloatingScore(result.getPosition(), earnedScore);
-                
                 break;
             case PORTAL_USED: 
                 soundManager.playSound(800, 100);
@@ -211,26 +201,17 @@ public class SnakeGame extends JPanel implements ActionListener {
 
     private void gameOver() {
         if (showResults) return;
-        
         running = false;
         showResults = true;
         gameTimer.stop();
         renderTimer.stop();
-        
-        if (rouletteSoundStopTimer != null && rouletteSoundStopTimer.isRunning()) {
-            rouletteSoundStopTimer.stop();
-        }
+        if (rouletteSoundStopTimer != null && rouletteSoundStopTimer.isRunning()) rouletteSoundStopTimer.stop();
         soundManager.stopClip("roulette");
         soundManager.playClipIfNotPlaying("gameover");
-        
         scoreManager.addScore(PlayerData.getPlayerName(), GameSettings.getMode(), GameSettings.getDisplayDifficulty(), 
                               gameState.getScore(), gameState.getMaxCombo(), gameState.getPlayTime(), gameState.getFoodEaten(), gameState.getItemsCollected());
-        
         repaint();
-        
-        if (buttonShowTimer != null && buttonShowTimer.isRunning()) {
-            buttonShowTimer.stop();
-        }
+        if (buttonShowTimer != null && buttonShowTimer.isRunning()) buttonShowTimer.stop();
         buttonShowTimer = new Timer(500, e -> showButtons());
         buttonShowTimer.setRepeats(false);
         buttonShowTimer.start();
@@ -239,11 +220,7 @@ public class SnakeGame extends JPanel implements ActionListener {
     public void restart() { startNewGame(); }
     public void cycleTheme() { themeManager.cycleTheme(); repaint(); }
     public void toggleSound() { soundManager.toggle(); }
-
-    public void handleEnter() {
-        if (showResults) { restart(); }
-    }
-
+    public void handleEnter() { if (showResults) restart(); }
     public void handleDirection(Point direction) {
         if (running) {
             Point target = direction;

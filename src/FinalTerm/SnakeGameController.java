@@ -21,6 +21,7 @@ public class SnakeGameController {
     private ThemeSelectPanel themeSelectPanel;
     
     public SnakeGameController() {
+        // 매니저 초기화
         themeManager = new ThemeManager();
         soundManager = new SoundManager();
         scoreManager = new ScoreManager();
@@ -50,6 +51,7 @@ public class SnakeGameController {
         nameInputPanel.setPreferredSize(panelSize);
         
         settingsPanel = new GameSettingsPanel(this);
+        settingsPanel.setPreferredSize(panelSize);
         
         snakeGame = new SnakeGame(this, themeManager, soundManager, scoreManager);
         
@@ -75,40 +77,31 @@ public class SnakeGameController {
         cardLayout.show(mainPanel, screen.name());
         frame.pack();
         
-        // [수정] 모든 화면에서 배경음악이 나오도록 설정
-        // loopClip 내부에 "이미 재생 중이면 유지"하는 로직이 있으므로 계속 호출해도 괜찮음
+        // 배경음악 유지
         soundManager.loopClip("bgm");
         
         // 화면별 로직
         switch (screen) {
             case PLAYING:
-                // 기존의 soundManager.stopClip("bgm"); 코드를 삭제함
                 snakeGame.startNewGame();
                 snakeGame.requestFocusInWindow();
                 break;
-                
             case NAME_INPUT:
                 nameInputPanel.focusNameField();
                 break;
-                
             case RANKING:
                 rankingPanel.updateScores();
                 break;
         }
     }
     
-    public SoundManager getSoundManager() {
-        return soundManager;
-    }
+    public SoundManager getSoundManager() { return soundManager; }
     
-    public void show() {
-        frame.setVisible(true);
-    }
+    public void show() { frame.setVisible(true); }
     
     public static void main(String[] args) {
         SwingUtilities.invokeLater(() -> {
-            SnakeGameController controller = new SnakeGameController();
-            controller.show();
+            new SnakeGameController().show();
         });
     }
 }

@@ -2,7 +2,7 @@ package FinalTerm;
 
 
 public enum GameDifficulty {
-    EASY(200, 100, "Easy"),       // ÃÊ±â ¼Óµµ, ÃÖ¼Ò ¼Óµµ, ÀÌ¸§
+    EASY(200, 100, "Easy"),       // ï¿½Ê±ï¿½ ï¿½Óµï¿½, ï¿½Ö¼ï¿½ ï¿½Óµï¿½, ï¿½Ì¸ï¿½
     NORMAL(150, 50, "Normal"),
     HARD(100, 30, "Hard");
     

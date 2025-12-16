@@ -3,7 +3,7 @@ package FinalTerm;
 
 public class GameSettings {
     private static GameDifficulty difficulty = GameDifficulty.NORMAL;
-    private static GameDifficulty displayDifficulty = GameDifficulty.NORMAL; // ·©Å· Ç¥½Ã¿ë
+    private static GameDifficulty displayDifficulty = GameDifficulty.NORMAL; // ï¿½ï¿½Å· Ç¥ï¿½Ã¿ï¿½
     private static GameMode mode = GameMode.CLASSIC;
     private static int timeLimit = 60;
     

@@ -2,7 +2,7 @@ package FinalTerm;
 
 
 public enum GameMode {
-    CLASSIC,      // ÀÏ¹Ý ¸ðµå
-    TIME_ATTACK   // ½Ã°£ Á¦ÇÑ ¸ðµå
+    CLASSIC,      // ï¿½Ï¹ï¿½ ï¿½ï¿½ï¿½
+    TIME_ATTACK   // ï¿½Ã°ï¿½ ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½
 }
 

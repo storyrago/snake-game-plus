@@ -8,6 +8,7 @@ public class NameInputPanel extends GradientPanel {
     private JTextField nameField;
     
     public NameInputPanel(SnakeGameController controller) {
+        // 배경색 그라데이션 설정
         super(new Color(15, 15, 35), new Color(35, 35, 55), true);
         this.controller = controller;
         setLayout(new BorderLayout());
@@ -21,18 +22,19 @@ public class NameInputPanel extends GradientPanel {
         centerPanel.setBorder(BorderFactory.createEmptyBorder(120, 80, 120, 80));
         
         JLabel iconLabel = new JLabel("SNAKE", SwingConstants.CENTER);
-        iconLabel.setFont(new Font("Arial", Font.BOLD, 48));
+        iconLabel.setFont(new Font("Arial", Font.BOLD, 48)); // 영문 타이틀
         iconLabel.setForeground(new Color(0, 255, 0));
         iconLabel.setAlignmentX(Component.CENTER_ALIGNMENT);
         
-        // [한글화]
         JLabel instructionLabel = new JLabel("이름을 입력하세요");
+        // [폰트 적용] Malgun Gothic
         instructionLabel.setFont(new Font("Malgun Gothic", Font.BOLD, 32));
         instructionLabel.setForeground(Color.WHITE);
         instructionLabel.setAlignmentX(Component.CENTER_ALIGNMENT);
         
         nameField = new JTextField(PlayerData.getPlayerName());
-        nameField.setFont(new Font("Arial", Font.PLAIN, 24));
+        // [폰트 적용] Malgun Gothic (입력 텍스트)
+        nameField.setFont(new Font("Malgun Gothic", Font.PLAIN, 24));
         nameField.setMaximumSize(new Dimension(380, 55));
         nameField.setHorizontalAlignment(JTextField.CENTER);
         nameField.setAlignmentX(Component.CENTER_ALIGNMENT);
@@ -44,8 +46,8 @@ public class NameInputPanel extends GradientPanel {
             BorderFactory.createEmptyBorder(10, 15, 10, 15)
         ));
         
-        // [한글화]
         JButton startButton = new JButton("게임 시작");
+        // [폰트 적용] Malgun Gothic
         startButton.setFont(new Font("Malgun Gothic", Font.BOLD, 22));
         startButton.setBackground(new Color(0, 180, 0));
         startButton.setForeground(Color.WHITE);
@@ -58,6 +60,7 @@ public class NameInputPanel extends GradientPanel {
         startButton.setMaximumSize(new Dimension(250, 55));
         startButton.setCursor(new Cursor(Cursor.HAND_CURSOR));
         
+        // 이벤트 리스너
         startButton.addActionListener(e -> {
             controller.getSoundManager().playClip("click");
             startGame();
@@ -67,6 +70,7 @@ public class NameInputPanel extends GradientPanel {
             startGame();
         });
         
+        // 버튼 호버 효과
         UIAnimationHelper.addHoverEffect(startButton, new Color(0, 180, 0), new Color(0, 255, 0), Color.WHITE, Color.BLACK);
         
         centerPanel.add(iconLabel);
@@ -89,7 +93,7 @@ public class NameInputPanel extends GradientPanel {
     private void startGame() {
         String name = nameField.getText().trim();
         if (name.isEmpty()) {
-            shakeComponent(nameField);
+            shakeComponent(nameField); // 이름 없으면 흔들기
             return;
         }
         PlayerData.setPlayerName(name);
@@ -115,8 +119,8 @@ public class NameInputPanel extends GradientPanel {
     }
     
     private JButton createBackButton() {
-        // [한글화]
         JButton button = new JButton("< 뒤로");
+        // [폰트 적용] Malgun Gothic
         button.setFont(new Font("Malgun Gothic", Font.PLAIN, 16));
         button.setBackground(new Color(60, 60, 80));
         button.setForeground(Color.WHITE);
@@ -133,8 +137,11 @@ public class NameInputPanel extends GradientPanel {
         return button;
     }
     
+    // [추가된 메서드] 이 부분이 없어서 오류가 났었습니다.
     public void focusNameField() {
-        nameField.requestFocusInWindow();
-        nameField.selectAll();
+        if (nameField != null) {
+            nameField.requestFocusInWindow();
+            nameField.selectAll();
+        }
     }
 }

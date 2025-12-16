@@ -231,9 +231,9 @@ public class GameRenderer {
         g2d.setStroke(new BasicStroke(2));
         g2d.drawRoundRect(x, y, boxWidth, boxHeight, 15, 15);
         g2d.setColor(Color.LIGHT_GRAY);
-        g2d.setFont(new Font("Arial", Font.ITALIC, 12));
+        g2d.setFont(new Font("Malgun Gothic", Font.ITALIC, 12));
         g2d.drawString("룰렛 돌리는중...", x + 15, y + 20);
-        g2d.setFont(new Font("Arial", Font.BOLD, 20));
+        g2d.setFont(new Font("Malgun Gothic", Font.BOLD, 20));
         FontMetrics fm = g2d.getFontMetrics();
         int textX = x + (boxWidth - fm.stringWidth(text)) / 2;
         int textY = y + 50;
@@ -243,7 +243,7 @@ public class GameRenderer {
     }
     
     private void drawEffectMessage(Graphics2D g2d, String msg, int width, int height, boolean isPositive) {
-        g2d.setFont(new Font("Arial", Font.BOLD, 30));
+        g2d.setFont(new Font("Malgun Gothic", Font.BOLD, 30));
         FontMetrics fm = g2d.getFontMetrics();
         int x = (width - fm.stringWidth(msg)) / 2;
         int y = height / 2;
@@ -258,7 +258,7 @@ public class GameRenderer {
         g2d.fillRect(0, gameAreaHeight, screenWidth, screenHeight - gameAreaHeight);
         
         g2d.setColor(Color.WHITE);
-        g2d.setFont(new Font("Arial", Font.BOLD, 14));
+        g2d.setFont(new Font("Malgun Gothic", Font.BOLD, 14));
         int y = gameAreaHeight + 25;
         g2d.drawString("점수: " + gameState.getScore(), 10, y);
         g2d.drawString("길이: " + gameState.getSnake().getLength(), 150, y);
@@ -288,7 +288,7 @@ public class GameRenderer {
         g2d.setColor(new Color(0, 255, 255));
         g2d.drawString(status, 10, y + 25);
         
-        g2d.setFont(new Font("Arial", Font.PLAIN, 12));
+        g2d.setFont(new Font("Malgun Gothic", Font.PLAIN, 12));
         int guideY = y + 55;
         g2d.setColor(Color.WHITE);
         g2d.drawString("R: 재시작 | T: 테마 | M: 사운드", 10, guideY);
@@ -299,14 +299,14 @@ public class GameRenderer {
         g2d.setColor(new Color(0, 0, 0, 200));
         g2d.fillRect(0, 0, width, GameBoard.getGridSize() * CELL_SIZE);
         g2d.setColor(Color.WHITE);
-        g2d.setFont(new Font("Arial", Font.BOLD, 36));
+        g2d.setFont(new Font("Malgun Gothic", Font.BOLD, 36));
         String text = "게임 오버";
         int x = (width - g2d.getFontMetrics().stringWidth(text)) / 2;
         g2d.drawString(text, x, 80);
         g2d.setFont(new Font("Arial", Font.BOLD, 18));
         g2d.setColor(Color.YELLOW);
         g2d.drawString("플레이 기록", 50, 130);
-        g2d.setFont(new Font("Arial", Font.PLAIN, 14));
+        g2d.setFont(new Font("Malgun Gothic", Font.PLAIN, 14));
         g2d.setColor(Color.WHITE);
         int lineY = 155;
         g2d.drawString("최종 점수: " + gameState.getScore(), 50, lineY);
