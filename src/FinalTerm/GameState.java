@@ -194,12 +194,12 @@ public class GameState {
         boolean isPositive = isPositiveEffect(rand);
         
         switch (rand) {
-            case 0: isSpeedUp = true; isSpeedDown = false; speedEffectEndTime = currentTime + 5000; effectName = "SPEED UP! (BAD)"; break;
-            case 1: isSpeedDown = true; isSpeedUp = false; speedEffectEndTime = currentTime + 5000; effectName = "SPEED DOWN (GOOD)"; break;
-            case 2: doubleScoreEndTime = currentTime + 10000; effectName = "DOUBLE SCORE (10s)"; break;
-            case 3: reverseInputEndTime = currentTime + 5000; effectName = "REVERSE CONTROL (5s)"; break;
-            case 4: reducedVisionEndTime = currentTime + 5000; effectName = "DARKNESS (5s)"; break;
-            case 5: snake.cutTail(3); effectName = "SCISSORS (CUT TAIL)"; break;
+            case 0: isSpeedUp = true; isSpeedDown = false; speedEffectEndTime = currentTime + 5000; effectName = "스피드 업 (BAD)"; break;
+            case 1: isSpeedDown = true; isSpeedUp = false; speedEffectEndTime = currentTime + 5000; effectName = "스피드 다운! (GOOD)"; break;
+            case 2: doubleScoreEndTime = currentTime + 10000; effectName = "점수 2배! (10s)"; break;
+            case 3: reverseInputEndTime = currentTime + 5000; effectName = "방향 전환 (5s)"; break;
+            case 4: reducedVisionEndTime = currentTime + 5000; effectName = "시야축소 (5s)"; break;
+            case 5: snake.cutTail(3); effectName = "꼬리 자르기! (CUT TAIL)"; break;
         }
         
         currentRouletteText = effectName;
